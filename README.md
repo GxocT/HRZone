@@ -16,7 +16,8 @@ A Beat Saber custom counter that displays your heart rate in-game, based on [HRC
 
 ## Requirements
 
-Install via mod installers like [ModAssistant](https://github.com/Assistant/ModAssistant/releases/latest) and [BSManager](https://www.bsmanager.io/)
+> [!NOTE]
+> HR Zone is not on BeatMods yet, so mod installers like BSManager cannot install it — follow the manual steps below and check back after the mod is approved.
 
 * [BSIPA](https://github.com/bsmg/BeatSaber-IPA-Reloaded) v4.3.6+
 * [BSML](https://github.com/monkeymanboy/BeatSaberMarkupLanguage) v1.12.0+
@@ -28,11 +29,13 @@ Install via mod installers like [ModAssistant](https://github.com/Assistant/ModA
 > Make sure all required mods are working before installing HR Zone.
 
 1. Download the [latest release](https://github.com/GxocT/HRZone/releases/latest).
-2. Extract into your `Beat Saber` game directory.
+2. Extract it into your `Beat Saber` game directory (the one next to `Beat Saber.exe`): you should end up with `Beat Saber/Plugins/HRZone.dll`. If the archive extracted into its own subfolder, move the `Plugins` folder up.
 3. Launch the game.
 4. Open the **HR Zone** settings menu from the main menu's mods section.
 5. On the **Server** tab, pick the data source and enter your feed URL. See [Data Sources](#data-sources) for details.
 6. Adjust zones, colors and the icon on the **HR Zone**, **Colorize** and **Icon** tabs.
+
+To uninstall, delete `Beat Saber/Plugins/HRZone.dll`; optionally also remove the mod's data: `UserData/HR Zone.json` and `UserData/HRZone/`.
 
 > [!NOTE]
 > Please open an [issue](https://github.com/GxocT/HRZone/issues) if you run into a problem or find a bug.
@@ -59,7 +62,7 @@ Open an [issue](https://github.com/GxocT/HRZone/issues) if there's a device or s
 > [!IMPORTANT]
 > Due to a BSIPA bug, edits made to the config file while the game is running won't be detected. Exit the game before editing.
 
-Most options can be changed in-game but if you want to edit the config directly, the config file is at `Beat Saber/UserData/HR Zone.json` (BSIPA names it after the mod's display name). See the full field reference below
+Most options can be changed in-game but if you want to edit the config directly, the config file is at `Beat Saber/UserData/HR Zone.json` (BSIPA names it after the mod's display name). See the full field reference below.
 
 | Field                    |   Type    |       Default        | Description                                                                                       |
 |--------------------------|:---------:|:--------------------:|---------------------------------------------------------------------------------------------------|
