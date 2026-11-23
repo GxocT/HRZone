@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- HR Zone brand logo (GitHub repo/org avatar). Not embedded in the mod, not referenced by code.
+     Geometry: contour heart + ECG stroke from Resources/heart.svg at 22px (round caps/joins);
+     color: horizontal Sunset bands clipped to the strokes, top to bottom, 74.4px each from y=59.
+     Canonical palette: zone-color-themes Sunset. Approved export: Assets/logo.png (GDI+ render). -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <mask id="strokes" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512">
+      <path d="M256 420C120 320 60 240 60 170C60 110 110 70 165 70C205 70 236 92 256 126C276 92 307 70 347 70C402 70 452 110 452 170C452 240 392 320 256 420Z" fill="none" stroke="#FFFFFF" stroke-width="22" stroke-linejoin="round"/>
+      <path d="M40 256L150 256L172 228L194 256L232 256L252 300L288 140L318 340L338 256L384 256L406 222L430 256L472 256" fill="none" stroke="#FFFFFF" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+    </mask>
+  </defs>
+  <g mask="url(#strokes)">
+    <rect x="0" y="59" width="512" height="74.4" fill="#E76A5E"/>
+    <rect x="0" y="133.4" width="512" height="74.4" fill="#F0A35E"/>
+    <rect x="0" y="207.8" width="512" height="74.4" fill="#93C08A"/>
+    <rect x="0" y="282.2" width="512" height="74.4" fill="#7FA6C4"/>
+    <rect x="0" y="356.6" width="512" height="74.4" fill="#9C8F8C"/>
+  </g>
+</svg>
