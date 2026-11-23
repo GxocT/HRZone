@@ -1,4 +1,4 @@
-# HR Zone <a href="https://github.com/GxocT/HRZone/releases"><img src="https://img.shields.io/github/v/release/GxocT/HRZone?include_prereleases&style=for-the-badge&label=RELEASE" align="right"></a> <img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FGxocT%2FHRZone%2Fdev%2FHRZone%2Fmanifest.json&query=%24.gameVersion&label=Beat%20Saber&color=ff0048&style=for-the-badge" align="right">
+# HR Zone <a href="https://github.com/GxocT/HRZone/releases"><img src="https://img.shields.io/github/v/release/GxocT/HRZone?include_prereleases&style=for-the-badge&label=RELEASE" align="right"></a> <img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FGxocT%2FHRZone%2Fmain%2FHRZone%2Fmanifest.json&query=%24.gameVersion&label=Beat%20Saber&color=ff0048&style=for-the-badge" align="right">
 
 **[English](README.md)** | Русский
 
