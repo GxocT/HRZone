@@ -1,8 +1,8 @@
-# HR Zone <a href="https://github.com/GxocT/HRZone/releases"><img src="https://img.shields.io/github/v/release/GxocT/HRZone?include_prereleases&style=for-the-badge&label=RELEASE" align="right"></a>
+# HR Zone <a href="https://github.com/GxocT/HRZone/releases"><img src="https://img.shields.io/github/v/release/GxocT/HRZone?include_prereleases&style=for-the-badge&label=RELEASE" align="right"></a> <img src="https://img.shields.io/badge/Beat_Saber-1.40.8-ff0048?style=for-the-badge" align="right">
+
+**English** | [Русский](README.ru.md)
 
 A Beat Saber custom counter that displays your heart rate in-game, based on [HRCounter](https://github.com/qe201020335/HRCounter) by [qe201020335](https://github.com/qe201020335).
-
-![HR Zone](Assets/hrc2.0_cmp.png)
 
 ## Features
 
@@ -19,6 +19,7 @@ A Beat Saber custom counter that displays your heart rate in-game, based on [HRC
 > [!NOTE]
 > HR Zone is not on BeatMods yet, so mod installers like BSManager cannot install it — follow the manual steps below and check back after the mod is approved.
 
+* Beat Saber **1.40.8** — the game version the mod is built and tested against
 * [BSIPA](https://github.com/bsmg/BeatSaber-IPA-Reloaded) v4.3.6+
 * [BSML](https://github.com/monkeymanboy/BeatSaberMarkupLanguage) v1.12.0+
 * [SiraUtil](https://github.com/Auros/SiraUtil) v3.0.0+
