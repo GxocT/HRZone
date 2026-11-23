@@ -56,11 +56,11 @@ internal class PluginConfig : INotifyPropertyChanged
     private bool _colorize = true;
     private bool _colorizeIcon = true;
     private int _maxHR = 180;
-    private Color _zone1Color = new(0.5648f, 0.5648f, 0.5648f); // default to gray (#909090)
-    private Color _zone2Color = new(0.1845f, 0.6277f, 1f); // default to blue (#2FA0FF)
-    private Color _zone3Color = new(0, 1, 0); // default to green (#00FF00)
-    private Color _zone4Color = new(1, 1, 0); // default to yellow (#FFFF00)
-    private Color _zone5Color = new(1, 0, 0); // default to red (#FF0000)
+    private Color _zone1Color = new(0.6117647f, 0.5607843f, 0.5490196f); // default to mauve (#9C8F8C)
+    private Color _zone2Color = new(0.4980392f, 0.6509804f, 0.7686275f); // default to blue (#7FA6C4)
+    private Color _zone3Color = new(0.5764706f, 0.7529412f, 0.5411765f); // default to green (#93C08A)
+    private Color _zone4Color = new(0.9411765f, 0.6392157f, 0.3686275f); // default to orange (#F0A35E)
+    private Color _zone5Color = new(0.9058824f, 0.4156863f, 0.3686275f); // default to red (#E76A5E)
     private Vector3 _staticCounterPosition = new(0f, 1.2f, 7f);
 
     private string _customIcon = "";
