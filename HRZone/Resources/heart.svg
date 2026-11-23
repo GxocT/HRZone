@@ -4,8 +4,10 @@
      placeholder sprite and the brand logo.
 
      Variants: contour heart only, or contour heart + ECG trace.
-     Stroke weights for gameplay presets: light 22px, medium 30px, bold 38px
-     (round caps/joins, stroke centered on the path); logo uses 22px.
+     Stroke weights for gameplay presets: Light 22px, Medium 30px, Strong 38px
+     (round caps/joins, stroke centered on the path); logo uses 22px. Seeds as
+     HR-{Light,Medium,Strong}.png and HRE-{Light,Medium,Strong}.png so the in-game
+     picker sorts by weight alphabetically.
      Export at 512x512 RGBA straight alpha: pure-white relief (#FFFFFF only for
      gameplay icons), >=16px transparent margin, optically centered. The zone-color
      logo paints the same strokes with horizontal Sunset bands as a clip mask. -->

@@ -27,12 +27,12 @@ internal class IconManager : IInitializable, IDisposable
 
     private static readonly (string ResourceName, string FileName)[] PresetIcons =
     [
-        ("HRZone.Resources.hrzone_heart_light.png", "hrzone_heart-light.png"),
-        ("HRZone.Resources.hrzone_heart_medium.png", "hrzone_heart-medium.png"),
-        ("HRZone.Resources.hrzone_heart_bold.png", "hrzone_heart-bold.png"),
-        ("HRZone.Resources.hrzone_heart_ecg_light.png", "hrzone_heart-ecg-light.png"),
-        ("HRZone.Resources.hrzone_heart_ecg_medium.png", "hrzone_heart-ecg-medium.png"),
-        ("HRZone.Resources.hrzone_heart_ecg_bold.png", "hrzone_heart-ecg-bold.png")
+        ("HRZone.Resources.HR-Light.png", "HR-Light.png"),
+        ("HRZone.Resources.HR-Medium.png", "HR-Medium.png"),
+        ("HRZone.Resources.HR-Strong.png", "HR-Strong.png"),
+        ("HRZone.Resources.HRE-Light.png", "HRE-Light.png"),
+        ("HRZone.Resources.HRE-Medium.png", "HRE-Medium.png"),
+        ("HRZone.Resources.HRE-Strong.png", "HRE-Strong.png")
     ];
 
     internal string IconDirPath => _iconDir.FullName;
