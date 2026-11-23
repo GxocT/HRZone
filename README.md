@@ -1,4 +1,4 @@
-# HR Zone <a href="https://github.com/GxocT/HRZone/releases"><img src="https://img.shields.io/github/v/release/GxocT/HRZone?include_prereleases&style=for-the-badge&label=RELEASE" align="right"></a> <img src="https://img.shields.io/badge/Beat_Saber-1.40.8-ff0048?style=for-the-badge" align="right">
+# HR Zone <a href="https://github.com/GxocT/HRZone/releases"><img src="https://img.shields.io/github/v/release/GxocT/HRZone?include_prereleases&style=for-the-badge&label=RELEASE" align="right"></a> <img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FGxocT%2FHRZone%2Fdev%2FHRZone%2Fmanifest.json&query=%24.gameVersion&label=Beat%20Saber&color=ff0048&style=for-the-badge" align="right">
 
 **English** | [Русский](README.ru.md)
 
@@ -6,18 +6,15 @@ A Beat Saber custom counter that displays your heart rate in-game, based on [HRC
 
 ## Features
 
-- Reads your heart rate from a configured HTTP feed (see [Data Sources](#data-sources))
-- Five heart-rate zones derived from your `MaxHR`, each with its own color
-- `Colorize` tints the heart rate number and `Colorize Icon` tints the heart icon with the current zone color, independently
-- The counter shows `--` when no heart rate value is available
-- Customizable counter icon (drop your own image into `UserData/HRZone/Icons/`)
-- World-space standalone counter that follows the HUD rotation in 360°/90° modes
-- Counter stays hidden while a **BeatLeader** or **ScoreSaber** replay is playing
+- 📡 Reads your heart rate from a configured HTTP feed (see [Data Sources](#data-sources))
+- ❤️ Five heart-rate zones derived from your `MaxHR`, each with its own color
+- 🎨 `Colorize` tints the heart rate number and `Colorize Icon` tints the heart icon with the current zone color, independently
+- 🖼️ Customizable counter icon — pick one of the six preset hearts or drop your own image into `UserData/HRZone/Icons/`
 
 ## Requirements
 
 > [!NOTE]
-> HR Zone is not on BeatMods yet, so mod installers like BSManager cannot install it — follow the manual steps below and check back after the mod is approved.
+> HR Zone is not on BeatMods yet.
 
 * Beat Saber **1.40.8** — the game version the mod is built and tested against
 * [BSIPA](https://github.com/bsmg/BeatSaber-IPA-Reloaded) v4.3.6+
@@ -43,25 +40,32 @@ To uninstall, delete `Beat Saber/Plugins/HRZone.dll`; optionally also remove the
 
 ## Data Sources
 
-### WebRequest
+### WebRequest 🌐
 
-Polls an http/https endpoint that returns HR data in either of these formats:
+Polls an http/https endpoint and reads the heart rate from the response body. Either format works — a plain number:
 
-* A JSON object containing `bpm` (int)
-* A plain integer body (regex `^\d+$`)
+```
+72
+```
+
+or a JSON object with a `bpm` field:
+
+```json
+{"bpm": 72}
+```
 
 Enter your URL in the **Request URL** field of the **Server** tab and confirm it on the keyboard; it saves immediately, no Apply button needed. Below the field the tab previews the feed: your heart rate when the request works, `No connection` when it fails, and `URL not set` when the field is empty.
 
 The same value is stored as `FeedLink`, so very long URLs can also be pasted into the config file. See [Manual Config Editing](#manual-config-editing).
 
-### More?
+### More? 💡
 
 Open an [issue](https://github.com/GxocT/HRZone/issues) if there's a device or service you'd like supported.
 
 ## Manual Config Editing
 
 > [!IMPORTANT]
-> Due to a BSIPA bug, edits made to the config file while the game is running won't be detected. Exit the game before editing.
+> Exit the game before editing the config file; edits are applied when the game starts.
 
 Most options can be changed in-game but if you want to edit the config directly, the config file is at `Beat Saber/UserData/HR Zone.json` (BSIPA names it after the mod's display name). See the full field reference below.
 
@@ -74,10 +78,10 @@ Most options can be changed in-game but if you want to edit the config directly,
 | `Colorize`               |   bool    |        `true`        | Colorize the heart rate number.                                                                   |
 | `ColorizeIcon`           |   bool    |        `true`        | Tint the heart icon with the current zone color. Turn off to keep the icon image's own colors.    |
 | `MaxHR`                  |    int    |        `180`         | Player maximum heart rate (120-220); the five HR zones are derived from it.                       |
-| `Zone1Color`             |  string   |  `"#909090"` (Gray)  | Color below 60 % of `MaxHR`.                                                                      |
-| `Zone2Color`             |  string   |  `"#2FA0FF"` (Blue)  | Color for 60-70 % of `MaxHR`.                                                                     |
-| `Zone3Color`             |  string   | `"#00FF00"` (Green)  | Color for 70-80 % of `MaxHR`.                                                                     |
-| `Zone4Color`             |  string   | `"#FFFF00"` (Yellow) | Color for 80-90 % of `MaxHR`.                                                                     |
-| `Zone5Color`             |  string   |  `"#FF0000"` (Red)   | Color for 90 % of `MaxHR` and above.                                                              |
+| `Zone1Color`             |  string   |  `"#9C8F8C"` (Mauve) | Color below 60 % of `MaxHR`.                                                                      |
+| `Zone2Color`             |  string   |  `"#7FA6C4"` (Blue)  | Color for 60-70 % of `MaxHR`.                                                                     |
+| `Zone3Color`             |  string   | `"#93C08A"` (Green)  | Color for 70-80 % of `MaxHR`.                                                                     |
+| `Zone4Color`             |  string   | `"#F0A35E"` (Orange) | Color for 80-90 % of `MaxHR`.                                                                     |
+| `Zone5Color`             |  string   |  `"#E76A5E"` (Red)   | Color for 90 % of `MaxHR` and above.                                                              |
 | `CustomIcon`             |  string   |         `""`         | Filename of a custom icon under `UserData/HRZone/Icons/`. Empty string uses the default heart icon. |
 | `StaticCounterPosition`  | 3D Vector |    `(0, 1.2, 7)`     | World-space position of the standalone counter in non-360/90 modes.                               |
