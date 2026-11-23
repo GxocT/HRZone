@@ -79,12 +79,9 @@ internal class AssetBundleManager : IInitializable, IDisposable
 
         var container = canvas.transform.GetChild(0)!;
         var icon = container.GetChild(0).gameObject;
-        var replayIcon = icon.transform.GetChild(0).gameObject;
         var numbers = container.GetChild(1).GetComponent<TMP_Text>();
 
         var iconImage = icon.GetComponent<Image>();
-
-        replayIcon.SetActive(false);
 
         var view = new CounterView(canvas, container, numbers, iconImage, _iconManager, _config);
         view.ApplyBloom(_config.NoBloom);

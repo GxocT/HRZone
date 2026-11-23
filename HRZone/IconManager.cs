@@ -25,6 +25,16 @@ internal class IconManager : IInitializable, IDisposable
 
     private readonly HashSet<string> _acceptableExtensions = [".png", ".jpg", ".jpeg", ".gif"];
 
+    private static readonly (string ResourceName, string FileName)[] PresetIcons =
+    [
+        ("HRZone.Resources.hrzone_heart_light.png", "hrzone_heart-light.png"),
+        ("HRZone.Resources.hrzone_heart_medium.png", "hrzone_heart-medium.png"),
+        ("HRZone.Resources.hrzone_heart_bold.png", "hrzone_heart-bold.png"),
+        ("HRZone.Resources.hrzone_heart_ecg_light.png", "hrzone_heart-ecg-light.png"),
+        ("HRZone.Resources.hrzone_heart_ecg_medium.png", "hrzone_heart-ecg-medium.png"),
+        ("HRZone.Resources.hrzone_heart_ecg_bold.png", "hrzone_heart-ecg-bold.png")
+    ];
+
     internal string IconDirPath => _iconDir.FullName;
     
     internal Sprite? DefaultIcon { get; private set; }
@@ -39,27 +49,36 @@ internal class IconManager : IInitializable, IDisposable
     void IInitializable.Initialize()
     {
         DefaultIcon = LoadDefaultIcon();
-        try
-        {
-            var hrcIconPath = Path.Combine(IconDirPath, "hrc_white.png");
-            if (!File.Exists(hrcIconPath))
-            {
-                using var resourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("HRZone.Resources.hrzone.png");
-                if (resourceStream != null)
-                {
-                    var iconPath = Path.Combine(IconDirPath, "hrc_white.png");
-                    using var fileStream = new FileStream(iconPath, FileMode.Create, FileAccess.Write);
-                    resourceStream.CopyTo(fileStream);
-                }
-            }
-        }
-        catch (Exception e)
-        {
-            _logger.Debug("Failed to copy hrc_white.png");
-            _logger.Debug(e);
-        }
+        SeedPresetIcons();
 
         UnityMainThreadTaskScheduler.Factory.StartNew(LoadAllIconsAsync);
+    }
+
+    private void SeedPresetIcons()
+    {
+        foreach (var (resourceName, fileName) in PresetIcons)
+        {
+            var iconPath = Path.Combine(IconDirPath, fileName);
+            if (File.Exists(iconPath)) continue;
+
+            try
+            {
+                using var resourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName);
+                if (resourceStream == null)
+                {
+                    _logger.Warn($"Failed to find {resourceName} from ManifestResourceStream!");
+                    continue;
+                }
+
+                using var fileStream = new FileStream(iconPath, FileMode.Create, FileAccess.Write);
+                resourceStream.CopyTo(fileStream);
+            }
+            catch (Exception e)
+            {
+                _logger.Warn($"Failed to seed {fileName}");
+                _logger.Debug(e);
+            }
+        }
     }
 
     void IDisposable.Dispose()

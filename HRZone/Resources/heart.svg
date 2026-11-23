@@ -1,7 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Editable master for Resources/heart.png. Export at 512x512 RGBA straight alpha,
-     relief carried by the alpha channel only, >=16px transparent margin, optically centered.
-     The shipped PNG is still the legacy 256x256 test sprite; replacing it is export-only. -->
+<!-- Vector master for every project-owned heart graphic: six gameplay preset icons
+     (two variants × three stroke weights), the default/manifest icon, the prefab
+     placeholder sprite and the brand logo.
+
+     Variants: contour heart only, or contour heart + ECG trace.
+     Stroke weights for gameplay presets: light 22px, medium 30px, bold 38px
+     (round caps/joins, stroke centered on the path); logo uses 22px.
+     Export at 512x512 RGBA straight alpha: pure-white relief (#FFFFFF only for
+     gameplay icons), >=16px transparent margin, optically centered. The zone-color
+     logo paints the same strokes with horizontal Sunset bands as a clip mask. -->
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-  <path fill="#FFFFFF" d="M256 420C120 320 60 240 60 170C60 110 110 70 165 70C205 70 236 92 256 126C276 92 307 70 347 70C402 70 452 110 452 170C452 240 392 320 256 420Z"/>
+  <path id="heart" fill="#FFFFFF" d="M256 420C120 320 60 240 60 170C60 110 110 70 165 70C205 70 236 92 256 126C276 92 307 70 347 70C402 70 452 110 452 170C452 240 392 320 256 420Z"/>
+  <path id="ecg" fill="none" stroke="#FFFFFF" stroke-width="22" stroke-linecap="round" stroke-linejoin="round" d="M40 256L150 256L172 228L194 256L232 256L252 300L288 140L318 340L338 256L384 256L406 222L430 256L472 256"/>
 </svg>
