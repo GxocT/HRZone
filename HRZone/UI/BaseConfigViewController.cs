@@ -1,0 +1,83 @@
+﻿using System.ComponentModel;
+using BeatSaberMarkupLanguage.Attributes;
+using BeatSaberMarkupLanguage.ViewControllers;
+using HRZone.Configuration;
+using IPA.Logging;
+using JetBrains.Annotations;
+using Zenject;
+
+namespace HRZone.UI;
+
+internal abstract class BaseConfigViewController : BSMLAutomaticViewController
+{
+    [Inject(Id = typeof(BaseConfigViewController))]
+    private readonly Logger _logger = null!;
+
+    [Inject]
+    protected readonly PluginConfig Config = null!;
+
+    protected bool Parsed { get; private set; }
+
+    [UIAction("#post-parse")]
+    [UsedImplicitly]
+    protected virtual void OnParsed()
+    {
+        Parsed = true;
+        RefreshUI(false);
+    }
+
+    protected override void DidActivate(bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling)
+    {
+        _logger.Trace("DidActivate");
+        base.DidActivate(firstActivation, addedToHierarchy, screenSystemEnabling);
+
+        if (!firstActivation)
+        {
+            // config might have changed while we were inactive
+            RefreshUI(true);
+        }
+
+        Config.PropertyChanged += OnConfigChanged;
+    }
+
+    protected override void DidDeactivate(bool removedFromHierarchy, bool screenSystemDisabling)
+    {
+        _logger.Trace("DidDeactivate");
+        Config.PropertyChanged -= OnConfigChanged;
+
+        base.DidDeactivate(removedFromHierarchy, screenSystemDisabling);
+    }
+
+    private void RefreshUI(bool notifyAll)
+    {
+        if (!Parsed) return;
+        if (notifyAll) NotifyPropertyChanged(null);
+        RefreshUI();
+    }
+
+    /**
+     * Refreshes any ui elements that won't be updated automatically.
+     * Will also be called when all config properties have changed.
+     */
+    protected abstract void RefreshUI();
+
+    private void OnConfigChanged(object? sender, PropertyChangedEventArgs args)
+    {
+        if (!Parsed) return;
+        NotifyPropertyChanged(args.PropertyName);
+        if (string.IsNullOrEmpty(args.PropertyName))
+        {
+            RefreshUI(false);
+        }
+        else
+        {
+            OnConfigChanged(args.PropertyName);
+        }
+    }
+
+    /**
+     * Called when a config property changes. Only called for the changed property, not for all properties.
+     * NotifyPropertyChanged is already called for the changed property at this point.
+     */
+    protected abstract void OnConfigChanged(string propertyName);
+}

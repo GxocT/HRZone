@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Editable master for Resources/heart.png. Export at 512x512 RGBA straight alpha,
+     relief carried by the alpha channel only, >=16px transparent margin, optically centered.
+     The shipped PNG is still the legacy 256x256 test sprite; replacing it is export-only. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <path fill="#FFFFFF" d="M256 420C120 320 60 240 60 170C60 110 110 70 165 70C205 70 236 92 256 126C276 92 307 70 347 70C402 70 452 110 452 170C452 240 392 320 256 420Z"/>
+</svg>

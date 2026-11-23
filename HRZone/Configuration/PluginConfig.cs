@@ -1,0 +1,234 @@
+﻿using System;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using HRZone.Utils;
+using HRZone.Utils.Converters;
+using IPA.Config;
+using IPA.Config.Stores;
+using IPA.Config.Stores.Attributes;
+using IPA.Config.Stores.Converters;
+using IPA.Utilities.Async;
+using JetBrains.Annotations;
+using Newtonsoft.Json;
+using UnityEngine;
+using IPALogger = IPA.Logging.Logger;
+using IPAConfig = IPA.Config.Config;
+
+[assembly: InternalsVisibleTo(GeneratedStore.AssemblyVisibilityTarget)]
+
+namespace HRZone.Configuration;
+
+internal class PluginConfig : INotifyPropertyChanged
+{
+    private static PluginConfig? _instance;
+    private static IPALogger _logger = null!;
+
+    public static PluginConfig DefaultValues { get; } = new();
+
+    public static PluginConfig Initialize(IPALogger logger, IPAConfig conf)
+    {
+        if (_instance != null) return _instance;
+        _logger = logger;
+        _instance = conf.Generated<PluginConfig>();
+        _logger.Debug("Config loaded");
+        return _instance;
+    }
+
+    private readonly bool _isGenerateStore;
+
+    public PluginConfig()
+    {
+        // ReSharper disable once SuspiciousTypeConversion.Global
+        // BSIPA generated config store has this interface
+        _isGenerateStore = this is IConfigStore;
+        if (_isGenerateStore)
+        {
+            _logger.Trace("Hot Config ctor");
+        }
+    }
+
+    #region private backing fields
+
+    private bool _modEnable = true;
+    private string _dataSource = "WebRequest";
+    private string _feedLink = "http://127.0.0.1:62261/bpm";
+    private bool _noBloom = false;
+    private bool _colorize = true;
+    private bool _colorizeIcon = true;
+    private int _maxHR = 180;
+    private Color _zone1Color = new(0.5648f, 0.5648f, 0.5648f); // default to gray (#909090)
+    private Color _zone2Color = new(0.1845f, 0.6277f, 1f); // default to blue (#2FA0FF)
+    private Color _zone3Color = new(0, 1, 0); // default to green (#00FF00)
+    private Color _zone4Color = new(1, 1, 0); // default to yellow (#FFFF00)
+    private Color _zone5Color = new(1, 0, 0); // default to red (#FF0000)
+    private Vector3 _staticCounterPosition = new(0f, 1.2f, 7f);
+
+    private string _customIcon = "";
+
+    #endregion
+
+    // Must be 'virtual' if you want BSIPA to detect a value change and save the config automatically.
+
+    public virtual bool ModEnable
+    {
+        get => _modEnable;
+        set => _modEnable = value;
+    }
+
+    public virtual string DataSource
+    {
+        get => _dataSource;
+        set => _dataSource = value;
+    }
+
+    public virtual string FeedLink
+    {
+        get => _feedLink;
+        set => _feedLink = value;
+    }
+
+    public virtual bool NoBloom
+    {
+        get => _noBloom;
+        set => _noBloom = value;
+    }
+
+    public virtual bool Colorize
+    {
+        get => _colorize;
+        set => _colorize = value;
+    }
+
+    public virtual bool ColorizeIcon
+    {
+        get => _colorizeIcon;
+        set => _colorizeIcon = value;
+    }
+
+    public virtual int MaxHR
+    {
+        get => _maxHR;
+        set => _maxHR = value;
+    }
+
+    [UseConverter(typeof(HexColorConverter))]
+    [JsonConverter(typeof(WrappedTextValueJsonConverter<Color, HexColorConverter>))]
+    public virtual Color Zone1Color
+    {
+        get => _zone1Color;
+        set => _zone1Color = value;
+    }
+
+    [UseConverter(typeof(HexColorConverter))]
+    [JsonConverter(typeof(WrappedTextValueJsonConverter<Color, HexColorConverter>))]
+    public virtual Color Zone2Color
+    {
+        get => _zone2Color;
+        set => _zone2Color = value;
+    }
+
+    [UseConverter(typeof(HexColorConverter))]
+    [JsonConverter(typeof(WrappedTextValueJsonConverter<Color, HexColorConverter>))]
+    public virtual Color Zone3Color
+    {
+        get => _zone3Color;
+        set => _zone3Color = value;
+    }
+
+    [UseConverter(typeof(HexColorConverter))]
+    [JsonConverter(typeof(WrappedTextValueJsonConverter<Color, HexColorConverter>))]
+    public virtual Color Zone4Color
+    {
+        get => _zone4Color;
+        set => _zone4Color = value;
+    }
+
+    [UseConverter(typeof(HexColorConverter))]
+    [JsonConverter(typeof(WrappedTextValueJsonConverter<Color, HexColorConverter>))]
+    public virtual Color Zone5Color
+    {
+        get => _zone5Color;
+        set => _zone5Color = value;
+    }
+
+    [JsonConverter(typeof(Vector3JsonConverter))]
+    public virtual Vector3 StaticCounterPosition
+    {
+        get => _staticCounterPosition;
+        set => _staticCounterPosition = value;
+    }
+
+    public virtual string CustomIcon
+    {
+        get => _customIcon;
+        set => _customIcon = value;
+    }
+
+    protected virtual void Changed()
+    {
+        _logger.Trace("Changed");
+        // generated config will raise property changed events
+        if (!_isGenerateStore) RaisePropertyChanged(null);
+    }
+
+    [UsedImplicitly]
+    protected virtual void OnReload()
+    {
+        _logger.Trace("OnReload");
+        // generated config will raise property changed events
+        if (!_isGenerateStore) RaisePropertyChanged(null);
+    }
+
+    protected internal virtual void CopyFrom(PluginConfig other)
+    {
+        _logger.Trace("CopyFrom");
+        // generated config has generated copy logic, and will raise property changed events
+        if (!_isGenerateStore) CopyFromInternal(other);
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    [UsedImplicitly]
+    protected void RaisePropertyChanged([CallerMemberName] string? propertyName = null)
+    {
+        _logger.Spam($"Property Changed: {propertyName}");
+        var @event = PropertyChanged;
+        if (@event == null) return;
+        var args = new PropertyChangedEventArgs(propertyName);
+
+        UnityMainThreadTaskScheduler.Factory.StartNew(() =>
+        {
+            foreach (var handler in @event.GetInvocationList())
+            {
+                try
+                {
+                    ((PropertyChangedEventHandler)handler)(this, args);
+                }
+                catch (Exception e)
+                {
+                    _logger.Critical(e);
+                }
+            }
+        });
+    }
+
+    private void CopyFromInternal(PluginConfig other)
+    {
+        _modEnable = other._modEnable;
+        _dataSource = other._dataSource;
+        _feedLink = other._feedLink;
+        _noBloom = other._noBloom;
+        _colorize = other._colorize;
+        _colorizeIcon = other._colorizeIcon;
+        _maxHR = other._maxHR;
+        _zone1Color = other._zone1Color;
+        _zone2Color = other._zone2Color;
+        _zone3Color = other._zone3Color;
+        _zone4Color = other._zone4Color;
+        _zone5Color = other._zone5Color;
+        _staticCounterPosition = other._staticCounterPosition;
+        _customIcon = other._customIcon;
+
+        Changed();
+    }
+}
