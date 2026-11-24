@@ -17,9 +17,9 @@ internal static class ColorThemeUtils
         [BRIGHT_KEY] = [FromHex("909090"), FromHex("2FA0FF"), FromHex("00FF00"), FromHex("FFFF00"), FromHex("FF0000")],
     };
 
-    public static IReadOnlyList<string> DROPDOWN_KEYS { get; } = [SUNSET_KEY, PASTEL_KEY, BRIGHT_KEY, USER_THEME_KEY];
+    internal static IReadOnlyList<string> DROPDOWN_KEYS { get; } = [SUNSET_KEY, PASTEL_KEY, BRIGHT_KEY, USER_THEME_KEY];
 
-    public static bool TryGetPreset(string key, out Color[] colors)
+    internal static bool TryGetPreset(string key, out Color[] colors)
     {
         if (PRESETS.TryGetValue(key, out var preset))
         {
@@ -33,7 +33,7 @@ internal static class ColorThemeUtils
 
     // Byte-level on purpose: config colors round-trip through the hex the HexColorConverter writes,
     // so float Color equality would be the wrong comparison.
-    public static bool ZoneColorsMatch(Color[] colors, IReadOnlyList<Color> preset)
+    internal static bool ZoneColorsMatch(Color[] colors, IReadOnlyList<Color> preset)
     {
         for (var i = 0; i < colors.Length; i++)
         {
