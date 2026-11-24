@@ -10,6 +10,9 @@ A Beat Saber custom counter that displays your heart rate in-game, based on [HRC
 - ❤️ Five heart-rate zones derived from your `MaxHR`, each with its own color
 - 🎨 `Colorize` tints the heart rate number and `Colorize Icon` tints the heart icon with the current zone color, independently
 - 🖼️ Customizable counter icon — pick one of the six preset hearts or drop your own image into `UserData/HRZone/Icons/`
+- 🕐 Menu display — a clock line and a heart rate counter above the song selection screen; clock and counter toggle independently, the clock format is selectable and the block position adjustable (both on by default)
+- 🌈 Zone color presets — `Sunset`, `Pastel` and `Bright`, or `User Theme` for your own five colors
+- 👻 `Autohide Heart Rate` keeps the in-level counter hidden until the first heart rate arrives
 
 ## Requirements
 
@@ -31,7 +34,10 @@ A Beat Saber custom counter that displays your heart rate in-game, based on [HRC
 3. Launch the game.
 4. Open the **HR Zone** settings menu from the main menu's mods section.
 5. On the **Server** tab, pick the data source and enter your feed URL. See [Data Sources](#data-sources) for details.
-6. Adjust zones, colors and the icon on the **HR Zone**, **Colorize** and **Icon** tabs.
+6. Adjust the counter, zones and colors on the **HR Zone** and **Theme** tabs, the icon on the **Icon** tab, and the menu clock & heart rate block on the **Menu** tab.
+
+> [!NOTE]
+> The menu block shows a clock. If another mod (for example Enhancements) shows a clock as well, turn one of the two off to avoid double clocks.
 
 To uninstall, delete `Beat Saber/Plugins/HRZone.dll`; optionally also remove the mod's data: `UserData/HR Zone.json` and `UserData/HRZone/`.
 
@@ -54,7 +60,9 @@ or a JSON object with a `bpm` field:
 {"bpm": 72}
 ```
 
-Enter your URL in the **Request URL** field of the **Server** tab and confirm it on the keyboard; it saves immediately, no Apply button needed. Below the field the tab previews the feed: your heart rate when the request works, `No connection` when it fails, and `URL not set` when the field is empty.
+Enter your URL in the **Request URL** field of the **Server** tab and confirm it on the keyboard; it saves immediately, no Apply button needed. Below the field the tab previews the feed: your heart rate when the request works, `No connection` when it fails, `URL not set` when the field is empty and `Mod is disabled` when the mod is turned off. The preview is fed by the same once-per-second poller that drives the menu display, so it is current the moment the screen opens.
+
+During a level the feed is polled once per second as well; when it is unreachable, the mod makes four connect attempts 3 seconds apart and then stops requesting it until the next level.
 
 The same value is stored as `FeedLink`, so very long URLs can also be pasted into the config file. See [Manual Config Editing](#manual-config-editing).
 
@@ -77,11 +85,24 @@ Most options can be changed in-game but if you want to edit the config directly,
 | `NoBloom`                |   bool    |       `false`        | Do you want no bloom on the counter number and heart icon?                                        |
 | `Colorize`               |   bool    |        `true`        | Colorize the heart rate number.                                                                   |
 | `ColorizeIcon`           |   bool    |        `true`        | Tint the heart icon with the current zone color. Turn off to keep the icon image's own colors.    |
+| `AutoHideCounter`        |   bool    |       `false`        | Keep the in-level counter hidden until the first heart rate arrives.                              |
 | `MaxHR`                  |    int    |        `180`         | Player maximum heart rate (120-220); the five HR zones are derived from it.                       |
 | `Zone1Color`             |  string   |  `"#9C8F8C"` (Mauve) | Color below 60 % of `MaxHR`.                                                                      |
 | `Zone2Color`             |  string   |  `"#7FA6C4"` (Blue)  | Color for 60-70 % of `MaxHR`.                                                                     |
 | `Zone3Color`             |  string   | `"#93C08A"` (Green)  | Color for 70-80 % of `MaxHR`.                                                                     |
 | `Zone4Color`             |  string   | `"#F0A35E"` (Orange) | Color for 80-90 % of `MaxHR`.                                                                     |
 | `Zone5Color`             |  string   |  `"#E76A5E"` (Red)   | Color for 90 % of `MaxHR` and above.                                                              |
+| `ColorTheme`             |  string   |      `"Sunset"`      | Zone color preset: `Sunset`, `Pastel`, `Bright` or `User Theme`. Picking a preset rewrites the five `Zone*Color` fields; editing a color on the Theme tab keeps your colors as `User Theme`. |
+| `UserThemeZone1Color`    |  string   |  `"#9C8F8C"` (Mauve) | Your color below 60 % of `MaxHR`, used while `ColorTheme` is `User Theme`.                        |
+| `UserThemeZone2Color`    |  string   |  `"#7FA6C4"` (Blue)  | Your color for 60-70 % of `MaxHR`.                                                                |
+| `UserThemeZone3Color`    |  string   | `"#93C08A"` (Green)  | Your color for 70-80 % of `MaxHR`.                                                                |
+| `UserThemeZone4Color`    |  string   | `"#F0A35E"` (Orange) | Your color for 80-90 % of `MaxHR`.                                                                |
+| `UserThemeZone5Color`    |  string   |  `"#E76A5E"` (Red)   | Your color for 90 % of `MaxHR` and above.                                                         |
 | `CustomIcon`             |  string   |         `""`         | Filename of a custom icon under `UserData/HRZone/Icons/`. Empty string uses the default heart icon. |
 | `StaticCounterPosition`  | 3D Vector |    `(0, 1.2, 7)`     | World-space position of the standalone counter in non-360/90 modes.                               |
+| `ShowMenuClock`          |   bool    |        `true`        | Show the clock line in the menus, above the menu heart rate counter.                              |
+| `ShowMenuHeartRate`      |   bool    |        `true`        | Show the heart rate counter in the menus.                                                         |
+| `MenuClockFormat`        |  string   |      `"HH:mm"`       | Clock format: `HH:mm`, `HH:mm:ss` or `h:mm tt`. An unknown value falls back to `HH:mm`.           |
+| `MenuCounterHeight`      |  float    |         `0`          | Menu block up/down offset in meters (-3..3); `0` is the default position.                         |
+| `MenuCounterDistance`    |  float    |         `0`          | Menu block closer/farther offset in meters (-3..3); `0` is the default position.                  |
+| `MenuCounterTilt`        |  float    |         `0`          | Menu block tilt in degrees (-45..45) on top of its base tilt.                                     |
