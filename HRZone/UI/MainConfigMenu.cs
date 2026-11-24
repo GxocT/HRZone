@@ -1,17 +1,15 @@
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
 using BeatSaberMarkupLanguage;
 using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.Components;
 using BGLib.Polyglot;
 using HMUI;
+using HRZone.Configuration;
 using HRZone.Data;
 using HRZone.Data.DataSources;
 using HRZone.Utils;
-using IPA.Utilities.Async;
 using JetBrains.Annotations;
 using UnityEngine;
 using Zenject;
@@ -23,10 +21,6 @@ namespace HRZone.UI;
 [ViewDefinition("HRZone.UI.BSML.configMenu.bsml")]
 internal class MainConfigMenu : BaseConfigViewController
 {
-    private static readonly TimeSpan PreviewPollInterval = TimeSpan.FromSeconds(5);
-
-    private static readonly HttpClient PreviewHttpClient = new() { Timeout = TimeSpan.FromSeconds(4) };
-
     [Inject]
     private readonly Logger _logger = null!;
 
@@ -36,7 +30,8 @@ internal class MainConfigMenu : BaseConfigViewController
     [Inject]
     private readonly DataSourceManager _dataSourceManager = null!;
 
-    private CancellationTokenSource? _previewCts;
+    [Inject]
+    private readonly MenuHRFeed _feed = null!;
 
     private HRZoneFeedPreview? _feedPreviewComponent;
 
@@ -56,7 +51,7 @@ internal class MainConfigMenu : BaseConfigViewController
 
     protected override void DidDeactivate(bool removedFromHierarchy, bool screenSystemDisabling)
     {
-        CancelFeedPreview();
+        _feed.StateChanged -= ApplyFeedState;
 
         base.DidDeactivate(removedFromHierarchy, screenSystemDisabling);
     }
@@ -66,7 +61,7 @@ internal class MainConfigMenu : BaseConfigViewController
         ReconcileThemeSelection();
         UpdateCustomIconSelection();
         NotifyZoneLabels();
-        StartFeedPreview();
+        AttachFeedPreview();
     }
 
     protected override void OnConfigChanged(string propertyName)
@@ -84,10 +79,6 @@ internal class MainConfigMenu : BaseConfigViewController
                 break;
             case nameof(Config.DataSource):
                 NotifyPropertyChanged(nameof(IsWebRequestSource));
-                StartFeedPreview();
-                break;
-            case nameof(Config.FeedLink):
-                StartFeedPreview();
                 break;
         }
     }
@@ -121,6 +112,74 @@ internal class MainConfigMenu : BaseConfigViewController
         set
         {
             if (Config.AutoHideCounter != value) Config.AutoHideCounter = value;
+        }
+    }
+
+    #endregion
+
+    #region Menu Tab
+
+    [UIValue(nameof(Config.ShowMenuClock))]
+    public bool ShowMenuClock
+    {
+        get => Config.ShowMenuClock;
+        set
+        {
+            if (Config.ShowMenuClock != value) Config.ShowMenuClock = value;
+        }
+    }
+
+    [UIValue(nameof(Config.ShowMenuHeartRate))]
+    public bool ShowMenuHeartRate
+    {
+        get => Config.ShowMenuHeartRate;
+        set
+        {
+            if (Config.ShowMenuHeartRate != value) Config.ShowMenuHeartRate = value;
+        }
+    }
+
+    [UIValue(nameof(Config.MenuClockFormat))]
+    public string MenuClockFormat
+    {
+        get => Config.MenuClockFormat;
+        set
+        {
+            if (Config.MenuClockFormat != value) Config.MenuClockFormat = value;
+        }
+    }
+
+    [UIValue(nameof(ClockFormatOptions))]
+    [UsedImplicitly]
+    public List<object> ClockFormatOptions { get; } = [..PluginConfig.CLOCK_FORMATS];
+
+    [UIValue(nameof(Config.MenuCounterHeight))]
+    public float MenuCounterHeight
+    {
+        get => Config.MenuCounterHeight;
+        set
+        {
+            if (Config.MenuCounterHeight != value) Config.MenuCounterHeight = value;
+        }
+    }
+
+    [UIValue(nameof(Config.MenuCounterDistance))]
+    public float MenuCounterDistance
+    {
+        get => Config.MenuCounterDistance;
+        set
+        {
+            if (Config.MenuCounterDistance != value) Config.MenuCounterDistance = value;
+        }
+    }
+
+    [UIValue(nameof(Config.MenuCounterTilt))]
+    public float MenuCounterTilt
+    {
+        get => Config.MenuCounterTilt;
+        set
+        {
+            if (Config.MenuCounterTilt != value) Config.MenuCounterTilt = value;
         }
     }
 
@@ -551,114 +610,43 @@ internal class MainConfigMenu : BaseConfigViewController
 
     #region Feed Preview
 
-    private void StartFeedPreview()
+    private void AttachFeedPreview()
     {
-        CancelFeedPreview();
+        _feed.StateChanged -= ApplyFeedState;
+        _feed.StateChanged += ApplyFeedState;
 
-        FeedPreviewText = "";
-        _feedPreviewComponent?.ShowNoValue();
+        // the shared poller is already running: the snapshot is the current state, no own request
+        if (!_feed.HasState)
+        {
+            FeedPreviewText = "";
+            _feedPreviewComponent?.ShowNoValue();
+            return;
+        }
 
-        if (!IsWebRequestSource) return;
-
-        var cts = new CancellationTokenSource();
-        _previewCts = cts;
-
-        Task.Run(() => PollFeedPreview(cts.Token));
+        ApplyFeedState(_feed.Status, _feed.CurrentHR);
     }
 
-    private void CancelFeedPreview()
+    private void ApplyFeedState(MenuFeedStatus status, int? hr)
     {
-        _previewCts?.Cancel();
-        _previewCts?.Dispose();
-        _previewCts = null;
-    }
-
-    private async Task PollFeedPreview(CancellationToken cancellationToken)
-    {
-        try
+        switch (status)
         {
-            while (!cancellationToken.IsCancellationRequested)
-            {
-                var url = Config.FeedLink;
-
-                if (string.IsNullOrEmpty(url))
-                {
-                    SetFeedPreview(PreviewOutcome.NotConfigured, 0);
-                    return;
-                }
-
-                var (outcome, hr) = await RequestHeartRate(url, cancellationToken);
-
-                // the url changed or the menu closed, so another run owns the preview now
-                if (cancellationToken.IsCancellationRequested || Config.FeedLink != url) return;
-
-                SetFeedPreview(outcome, hr);
-
-                await Task.Delay(PreviewPollInterval, cancellationToken);
-            }
+            case MenuFeedStatus.HasValue when hr.HasValue:
+                FeedPreviewText = "";
+                _feedPreviewComponent?.SetHeartRate(hr.Value);
+                break;
+            case MenuFeedStatus.Disabled:
+                _feedPreviewComponent?.ShowNoValue();
+                FeedPreviewText = Localization.Get("HRZONE_DATA_SOURCE_MENU_FEED_DISABLED");
+                break;
+            case MenuFeedStatus.Failed:
+                _feedPreviewComponent?.ShowNoValue();
+                FeedPreviewText = $"<color=red>{Localization.Get("HRZONE_DATA_SOURCE_MENU_FEED_NO_CONNECTION")}</color>";
+                break;
+            default:
+                _feedPreviewComponent?.ShowNoValue();
+                FeedPreviewText = Localization.Get("HRZONE_DATA_SOURCE_MENU_FEED_NOT_SET");
+                break;
         }
-        catch (OperationCanceledException)
-        {
-            _logger.Trace("HR preview stopped");
-        }
-        catch (Exception e)
-        {
-            _logger.Debug($"HR preview stopped: {e.Message}");
-        }
-    }
-
-    private async Task<(PreviewOutcome Outcome, int Hr)> RequestHeartRate(string url, CancellationToken cancellationToken)
-    {
-        try
-        {
-            using var res = await PreviewHttpClient.GetAsync(url, cancellationToken);
-            res.EnsureSuccessStatusCode();
-            var body = await res.Content.ReadAsStringAsync();
-
-            if (WebRequest.TryParseHeartRate(body, null, out var hr)) return (PreviewOutcome.HeartRate, hr);
-
-            _logger.Debug($"HR preview received no heart rate from {url}");
-        }
-        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
-        {
-            // the client's own timeout elapsed, the preview itself is still running
-            _logger.Debug($"HR preview request for {url} timed out");
-        }
-        catch (Exception e)
-        {
-            _logger.Debug($"HR preview request for {url} failed: {e.Message}");
-        }
-
-        return (PreviewOutcome.Failed, 0);
-    }
-
-    private void SetFeedPreview(PreviewOutcome outcome, int hr)
-    {
-        UnityMainThreadTaskScheduler.Factory.StartNew(() =>
-        {
-            switch (outcome)
-            {
-                case PreviewOutcome.HeartRate:
-                    FeedPreviewText = "";
-                    _feedPreviewComponent?.SetHeartRate(hr);
-                    break;
-                case PreviewOutcome.Failed:
-                    _feedPreviewComponent?.ShowNoValue();
-                    FeedPreviewText = $"<color=red>{Localization.Get("HRZONE_DATA_SOURCE_MENU_FEED_NO_CONNECTION")}</color>";
-                    break;
-                default:
-                    _feedPreviewComponent?.ShowNoValue();
-                    FeedPreviewText = Localization.Get("HRZONE_DATA_SOURCE_MENU_FEED_NOT_SET");
-                    break;
-            }
-        }, CancellationToken.None);
-    }
-
-    private enum PreviewOutcome
-    {
-        NotConfigured,
-        Failed,
-        HeartRate,
     }
 
     #endregion

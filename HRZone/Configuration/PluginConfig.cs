@@ -25,6 +25,10 @@ internal class PluginConfig : INotifyPropertyChanged
 
     public static PluginConfig DefaultValues { get; } = new();
 
+    public const string DEFAULT_CLOCK_FORMAT = "HH:mm";
+
+    internal static readonly string[] CLOCK_FORMATS = ["HH:mm", "HH:mm:ss", "h:mm tt"];
+
     public static PluginConfig Initialize(IPALogger logger, IPAConfig conf)
     {
         if (_instance != null) return _instance;
@@ -56,6 +60,12 @@ internal class PluginConfig : INotifyPropertyChanged
     private bool _colorize = true;
     private bool _colorizeIcon = true;
     private bool _autoHideCounter = false;
+    private bool _showMenuClock = true;
+    private bool _showMenuHeartRate = true;
+    private string _menuClockFormat = DEFAULT_CLOCK_FORMAT;
+    private float _menuCounterHeight = 0f;
+    private float _menuCounterDistance = 0f;
+    private float _menuCounterTilt = 0f;
     private int _maxHR = 180;
     private Color _zone1Color = new(0.6117647f, 0.5607843f, 0.5490196f); // default to mauve (#9C8F8C)
     private Color _zone2Color = new(0.4980392f, 0.6509804f, 0.7686275f); // default to blue (#7FA6C4)
@@ -116,6 +126,44 @@ internal class PluginConfig : INotifyPropertyChanged
     {
         get => _autoHideCounter;
         set => _autoHideCounter = value;
+    }
+
+    public virtual bool ShowMenuClock
+    {
+        get => _showMenuClock;
+        set => _showMenuClock = value;
+    }
+
+    public virtual bool ShowMenuHeartRate
+    {
+        get => _showMenuHeartRate;
+        set => _showMenuHeartRate = value;
+    }
+
+    // a stale or hand-edited format string falls back to the default instead of breaking the clock line
+    public virtual string MenuClockFormat
+    {
+        get => Array.IndexOf(CLOCK_FORMATS, _menuClockFormat) >= 0 ? _menuClockFormat : DEFAULT_CLOCK_FORMAT;
+        set => _menuClockFormat = value;
+    }
+
+    public virtual float MenuCounterHeight
+    {
+        get => _menuCounterHeight;
+        set => _menuCounterHeight = value;
+    }
+
+    public virtual float MenuCounterDistance
+    {
+        get => _menuCounterDistance;
+        set => _menuCounterDistance = value;
+    }
+
+    // a rotation offset on top of the block's proven base tilt (design D6)
+    public virtual float MenuCounterTilt
+    {
+        get => _menuCounterTilt;
+        set => _menuCounterTilt = value;
     }
 
     public virtual int MaxHR
@@ -280,6 +328,12 @@ internal class PluginConfig : INotifyPropertyChanged
         _colorize = other._colorize;
         _colorizeIcon = other._colorizeIcon;
         _autoHideCounter = other._autoHideCounter;
+        _showMenuClock = other._showMenuClock;
+        _showMenuHeartRate = other._showMenuHeartRate;
+        _menuClockFormat = other._menuClockFormat;
+        _menuCounterHeight = other._menuCounterHeight;
+        _menuCounterDistance = other._menuCounterDistance;
+        _menuCounterTilt = other._menuCounterTilt;
         _maxHR = other._maxHR;
         _zone1Color = other._zone1Color;
         _zone2Color = other._zone2Color;
