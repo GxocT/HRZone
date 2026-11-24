@@ -38,6 +38,8 @@ internal class HRZoneStandalone : HRZoneCounter, IInitializable, IDisposable
         Setup();
     }
 
+    protected override bool ShouldStartHidden() => Config.AutoHideCounter && _hrProvider?.CurrentHR == null;
+
     protected override bool SetupCounter(CounterView view)
     {
         _counter = view.Canvas;
