@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
 using BeatSaberMarkupLanguage;
 using BeatSaberMarkupLanguage.Attributes;
@@ -12,7 +10,6 @@ using HRZone.Configuration;
 using HRZone.Data;
 using HRZone.Data.DataSources;
 using HRZone.Utils;
-using IPA.Utilities.Async;
 using JetBrains.Annotations;
 using UnityEngine;
 using Zenject;
@@ -24,10 +21,6 @@ namespace HRZone.UI;
 [ViewDefinition("HRZone.UI.BSML.configMenu.bsml")]
 internal class MainConfigMenu : BaseConfigViewController
 {
-    private static readonly TimeSpan PreviewPollInterval = TimeSpan.FromSeconds(5);
-
-    private static readonly HttpClient PreviewHttpClient = new() { Timeout = TimeSpan.FromSeconds(4) };
-
     [Inject]
     private readonly Logger _logger = null!;
 
@@ -37,7 +30,8 @@ internal class MainConfigMenu : BaseConfigViewController
     [Inject]
     private readonly DataSourceManager _dataSourceManager = null!;
 
-    private CancellationTokenSource? _previewCts;
+    [Inject]
+    private readonly MenuHRFeed _feed = null!;
 
     private HRZoneFeedPreview? _feedPreviewComponent;
 
@@ -57,16 +51,17 @@ internal class MainConfigMenu : BaseConfigViewController
 
     protected override void DidDeactivate(bool removedFromHierarchy, bool screenSystemDisabling)
     {
-        CancelFeedPreview();
+        _feed.StateChanged -= ApplyFeedState;
 
         base.DidDeactivate(removedFromHierarchy, screenSystemDisabling);
     }
 
     protected override void RefreshUI()
     {
+        ReconcileThemeSelection();
         UpdateCustomIconSelection();
         NotifyZoneLabels();
-        StartFeedPreview();
+        AttachFeedPreview();
     }
 
     protected override void OnConfigChanged(string propertyName)
@@ -79,12 +74,11 @@ internal class MainConfigMenu : BaseConfigViewController
             case nameof(Config.MaxHR):
                 NotifyZoneLabels();
                 break;
+            case nameof(Config.ColorTheme):
+                ApplyTheme(Config.ColorTheme);
+                break;
             case nameof(Config.DataSource):
                 NotifyPropertyChanged(nameof(IsWebRequestSource));
-                StartFeedPreview();
-                break;
-            case nameof(Config.FeedLink):
-                StartFeedPreview();
                 break;
         }
     }
@@ -108,6 +102,84 @@ internal class MainConfigMenu : BaseConfigViewController
         set
         {
             if (Config.NoBloom != value) Config.NoBloom = value;
+        }
+    }
+
+    [UIValue(nameof(Config.AutoHideCounter))]
+    public bool AutoHideCounter
+    {
+        get => Config.AutoHideCounter;
+        set
+        {
+            if (Config.AutoHideCounter != value) Config.AutoHideCounter = value;
+        }
+    }
+
+    #endregion
+
+    #region Menu Tab
+
+    [UIValue(nameof(Config.ShowMenuClock))]
+    public bool ShowMenuClock
+    {
+        get => Config.ShowMenuClock;
+        set
+        {
+            if (Config.ShowMenuClock != value) Config.ShowMenuClock = value;
+        }
+    }
+
+    [UIValue(nameof(Config.ShowMenuHeartRate))]
+    public bool ShowMenuHeartRate
+    {
+        get => Config.ShowMenuHeartRate;
+        set
+        {
+            if (Config.ShowMenuHeartRate != value) Config.ShowMenuHeartRate = value;
+        }
+    }
+
+    [UIValue(nameof(Config.MenuClockFormat))]
+    public string MenuClockFormat
+    {
+        get => Config.MenuClockFormat;
+        set
+        {
+            if (Config.MenuClockFormat != value) Config.MenuClockFormat = value;
+        }
+    }
+
+    [UIValue(nameof(ClockFormatOptions))]
+    [UsedImplicitly]
+    public List<object> ClockFormatOptions { get; } = [..PluginConfig.CLOCK_FORMATS];
+
+    [UIValue(nameof(Config.MenuCounterHeight))]
+    public float MenuCounterHeight
+    {
+        get => Config.MenuCounterHeight;
+        set
+        {
+            if (Config.MenuCounterHeight != value) Config.MenuCounterHeight = value;
+        }
+    }
+
+    [UIValue(nameof(Config.MenuCounterDistance))]
+    public float MenuCounterDistance
+    {
+        get => Config.MenuCounterDistance;
+        set
+        {
+            if (Config.MenuCounterDistance != value) Config.MenuCounterDistance = value;
+        }
+    }
+
+    [UIValue(nameof(Config.MenuCounterTilt))]
+    public float MenuCounterTilt
+    {
+        get => Config.MenuCounterTilt;
+        set
+        {
+            if (Config.MenuCounterTilt != value) Config.MenuCounterTilt = value;
         }
     }
 
@@ -207,7 +279,7 @@ internal class MainConfigMenu : BaseConfigViewController
 
     #endregion
 
-    #region HR Zone & Colorize Tabs
+    #region HR Zone & Theme Tabs
 
     [UIValue(nameof(Config.ColorizeIcon))]
     public bool ColorizeIcon
@@ -229,6 +301,84 @@ internal class MainConfigMenu : BaseConfigViewController
         }
     }
 
+    private bool _applyingTheme;
+
+    [UIValue(nameof(Config.ColorTheme))]
+    public string ColorTheme
+    {
+        get => Config.ColorTheme;
+        set
+        {
+            if (Config.ColorTheme != value) Config.ColorTheme = value;
+        }
+    }
+
+    [UIValue(nameof(ThemeOptions))]
+    [UsedImplicitly]
+    public List<object> ThemeOptions { get; } = [..ColorThemeUtils.DROPDOWN_KEYS];
+
+    [UIAction(nameof(GetThemeDisplayName))]
+    [UsedImplicitly]
+    private string GetThemeDisplayName(string key) => key switch
+    {
+        ColorThemeUtils.SUNSET_KEY => Localization.Get("HRZONE_CONFIG_MENU_THEME_SUNSET"),
+        ColorThemeUtils.PASTEL_KEY => Localization.Get("HRZONE_CONFIG_MENU_THEME_PASTEL"),
+        ColorThemeUtils.BRIGHT_KEY => Localization.Get("HRZONE_CONFIG_MENU_THEME_BRIGHT"),
+        ColorThemeUtils.USER_THEME_KEY => Localization.Get("HRZONE_CONFIG_MENU_THEME_USER"),
+        _ => key,
+    };
+
+    private Color[] CurrentZoneColors() => [Config.Zone1Color, Config.Zone2Color, Config.Zone3Color, Config.Zone4Color, Config.Zone5Color];
+
+    private void ApplyTheme(string key)
+    {
+        if (_applyingTheme) return;
+
+        Color[] colors;
+        if (key == ColorThemeUtils.USER_THEME_KEY)
+            colors = [Config.UserThemeZone1Color, Config.UserThemeZone2Color, Config.UserThemeZone3Color, Config.UserThemeZone4Color, Config.UserThemeZone5Color];
+        else if (!ColorThemeUtils.TryGetPreset(key, out colors))
+            return;
+
+        _applyingTheme = true;
+        try
+        {
+            Config.Zone1Color = colors[0];
+            Config.Zone2Color = colors[1];
+            Config.Zone3Color = colors[2];
+            Config.Zone4Color = colors[3];
+            Config.Zone5Color = colors[4];
+        }
+        finally
+        {
+            _applyingTheme = false;
+        }
+    }
+
+    // A manual zone edit (a color picker change) makes the current screen colors the User Theme slot;
+    // captured at the call sites because PropertyChanged is dispatched asynchronously and a
+    // reactive handler could see stale guard state.
+    private void CaptureUserTheme()
+    {
+        Config.UserThemeZone1Color = Config.Zone1Color;
+        Config.UserThemeZone2Color = Config.Zone2Color;
+        Config.UserThemeZone3Color = Config.Zone3Color;
+        Config.UserThemeZone4Color = Config.Zone4Color;
+        Config.UserThemeZone5Color = Config.Zone5Color;
+
+        if (Config.ColorTheme != ColorThemeUtils.USER_THEME_KEY)
+            Config.ColorTheme = ColorThemeUtils.USER_THEME_KEY;
+    }
+
+    private void ReconcileThemeSelection()
+    {
+        if (!ColorThemeUtils.TryGetPreset(Config.ColorTheme, out var preset)) return;
+        if (ColorThemeUtils.ZoneColorsMatch(CurrentZoneColors(), preset)) return;
+
+        _logger.Debug($"Stored zone colors do not match the '{Config.ColorTheme}' theme; moving them to '{ColorThemeUtils.USER_THEME_KEY}'");
+        CaptureUserTheme();
+    }
+
     [UIValue(nameof(Config.MaxHR))]
     public int MaxHR
     {
@@ -245,7 +395,9 @@ internal class MainConfigMenu : BaseConfigViewController
         get => Config.Zone1Color;
         set
         {
-            if (Config.Zone1Color != value) Config.Zone1Color = value;
+            if (Config.Zone1Color == value) return;
+            Config.Zone1Color = value;
+            CaptureUserTheme();
         }
     }
 
@@ -255,7 +407,9 @@ internal class MainConfigMenu : BaseConfigViewController
         get => Config.Zone2Color;
         set
         {
-            if (Config.Zone2Color != value) Config.Zone2Color = value;
+            if (Config.Zone2Color == value) return;
+            Config.Zone2Color = value;
+            CaptureUserTheme();
         }
     }
 
@@ -265,7 +419,9 @@ internal class MainConfigMenu : BaseConfigViewController
         get => Config.Zone3Color;
         set
         {
-            if (Config.Zone3Color != value) Config.Zone3Color = value;
+            if (Config.Zone3Color == value) return;
+            Config.Zone3Color = value;
+            CaptureUserTheme();
         }
     }
 
@@ -275,7 +431,9 @@ internal class MainConfigMenu : BaseConfigViewController
         get => Config.Zone4Color;
         set
         {
-            if (Config.Zone4Color != value) Config.Zone4Color = value;
+            if (Config.Zone4Color == value) return;
+            Config.Zone4Color = value;
+            CaptureUserTheme();
         }
     }
 
@@ -285,7 +443,9 @@ internal class MainConfigMenu : BaseConfigViewController
         get => Config.Zone5Color;
         set
         {
-            if (Config.Zone5Color != value) Config.Zone5Color = value;
+            if (Config.Zone5Color == value) return;
+            Config.Zone5Color = value;
+            CaptureUserTheme();
         }
     }
 
@@ -322,44 +482,6 @@ internal class MainConfigMenu : BaseConfigViewController
         NotifyPropertyChanged(nameof(Zone5Text));
     }
 
-    [UIValue(nameof(PreviewCounter))]
-    public Transform PreviewCounter { get; private set; } = null!;
-
-    [UIAction(nameof(ResetZone1Color))]
-    [UsedImplicitly]
-    private void ResetZone1Color()
-    {
-        Config.Zone1Color = PluginConfig.DefaultValues.Zone1Color;
-    }
-
-    [UIAction(nameof(ResetZone2Color))]
-    [UsedImplicitly]
-    private void ResetZone2Color()
-    {
-        Config.Zone2Color = PluginConfig.DefaultValues.Zone2Color;
-    }
-
-    [UIAction(nameof(ResetZone3Color))]
-    [UsedImplicitly]
-    private void ResetZone3Color()
-    {
-        Config.Zone3Color = PluginConfig.DefaultValues.Zone3Color;
-    }
-
-    [UIAction(nameof(ResetZone4Color))]
-    [UsedImplicitly]
-    private void ResetZone4Color()
-    {
-        Config.Zone4Color = PluginConfig.DefaultValues.Zone4Color;
-    }
-
-    [UIAction(nameof(ResetZone5Color))]
-    [UsedImplicitly]
-    private void ResetZone5Color()
-    {
-        Config.Zone5Color = PluginConfig.DefaultValues.Zone5Color;
-    }
-
     #endregion
 
     #region Preview Counters
@@ -369,9 +491,6 @@ internal class MainConfigMenu : BaseConfigViewController
     private void SetupPreviewCounters(AssetBundleManager abm, DiContainer di)
     {
         _logger.Debug("Setting up preview counters");
-
-        PreviewCounter = SetupCounterPreview<HRZonePreview>(abm, di, "HRZone Preview Counter")
-                         ?? CreatePreviewFallback("HRZone Preview Fallback");
 
         var serverCounter = SetupCounterPreview<HRZoneFeedPreview>(abm, di, "HRZone Preview Server Counter");
         _feedPreviewComponent = serverCounter?.gameObject.GetComponent<HRZoneFeedPreview>();
@@ -491,114 +610,43 @@ internal class MainConfigMenu : BaseConfigViewController
 
     #region Feed Preview
 
-    private void StartFeedPreview()
+    private void AttachFeedPreview()
     {
-        CancelFeedPreview();
+        _feed.StateChanged -= ApplyFeedState;
+        _feed.StateChanged += ApplyFeedState;
 
-        FeedPreviewText = "";
-        _feedPreviewComponent?.ShowNoValue();
+        // the shared poller is already running: the snapshot is the current state, no own request
+        if (!_feed.HasState)
+        {
+            FeedPreviewText = "";
+            _feedPreviewComponent?.ShowNoValue();
+            return;
+        }
 
-        if (!IsWebRequestSource) return;
-
-        var cts = new CancellationTokenSource();
-        _previewCts = cts;
-
-        Task.Run(() => PollFeedPreview(cts.Token));
+        ApplyFeedState(_feed.Status, _feed.CurrentHR);
     }
 
-    private void CancelFeedPreview()
+    private void ApplyFeedState(MenuFeedStatus status, int? hr)
     {
-        _previewCts?.Cancel();
-        _previewCts?.Dispose();
-        _previewCts = null;
-    }
-
-    private async Task PollFeedPreview(CancellationToken cancellationToken)
-    {
-        try
+        switch (status)
         {
-            while (!cancellationToken.IsCancellationRequested)
-            {
-                var url = Config.FeedLink;
-
-                if (string.IsNullOrEmpty(url))
-                {
-                    SetFeedPreview(PreviewOutcome.NotConfigured, 0);
-                    return;
-                }
-
-                var (outcome, hr) = await RequestHeartRate(url, cancellationToken);
-
-                // the url changed or the menu closed, so another run owns the preview now
-                if (cancellationToken.IsCancellationRequested || Config.FeedLink != url) return;
-
-                SetFeedPreview(outcome, hr);
-
-                await Task.Delay(PreviewPollInterval, cancellationToken);
-            }
+            case MenuFeedStatus.HasValue when hr.HasValue:
+                FeedPreviewText = "";
+                _feedPreviewComponent?.SetHeartRate(hr.Value);
+                break;
+            case MenuFeedStatus.Disabled:
+                _feedPreviewComponent?.ShowNoValue();
+                FeedPreviewText = Localization.Get("HRZONE_DATA_SOURCE_MENU_FEED_DISABLED");
+                break;
+            case MenuFeedStatus.Failed:
+                _feedPreviewComponent?.ShowNoValue();
+                FeedPreviewText = $"<color=red>{Localization.Get("HRZONE_DATA_SOURCE_MENU_FEED_NO_CONNECTION")}</color>";
+                break;
+            default:
+                _feedPreviewComponent?.ShowNoValue();
+                FeedPreviewText = Localization.Get("HRZONE_DATA_SOURCE_MENU_FEED_NOT_SET");
+                break;
         }
-        catch (OperationCanceledException)
-        {
-            _logger.Trace("HR preview stopped");
-        }
-        catch (Exception e)
-        {
-            _logger.Debug($"HR preview stopped: {e.Message}");
-        }
-    }
-
-    private async Task<(PreviewOutcome Outcome, int Hr)> RequestHeartRate(string url, CancellationToken cancellationToken)
-    {
-        try
-        {
-            using var res = await PreviewHttpClient.GetAsync(url, cancellationToken);
-            res.EnsureSuccessStatusCode();
-            var body = await res.Content.ReadAsStringAsync();
-
-            if (WebRequest.TryParseHeartRate(body, null, out var hr)) return (PreviewOutcome.HeartRate, hr);
-
-            _logger.Debug($"HR preview received no heart rate from {url}");
-        }
-        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
-        {
-            // the client's own timeout elapsed, the preview itself is still running
-            _logger.Debug($"HR preview request for {url} timed out");
-        }
-        catch (Exception e)
-        {
-            _logger.Debug($"HR preview request for {url} failed: {e.Message}");
-        }
-
-        return (PreviewOutcome.Failed, 0);
-    }
-
-    private void SetFeedPreview(PreviewOutcome outcome, int hr)
-    {
-        UnityMainThreadTaskScheduler.Factory.StartNew(() =>
-        {
-            switch (outcome)
-            {
-                case PreviewOutcome.HeartRate:
-                    FeedPreviewText = "";
-                    _feedPreviewComponent?.SetHeartRate(hr);
-                    break;
-                case PreviewOutcome.Failed:
-                    _feedPreviewComponent?.ShowNoValue();
-                    FeedPreviewText = $"<color=red>{Localization.Get("HRZONE_DATA_SOURCE_MENU_FEED_NO_CONNECTION")}</color>";
-                    break;
-                default:
-                    _feedPreviewComponent?.ShowNoValue();
-                    FeedPreviewText = Localization.Get("HRZONE_DATA_SOURCE_MENU_FEED_NOT_SET");
-                    break;
-            }
-        }, CancellationToken.None);
-    }
-
-    private enum PreviewOutcome
-    {
-        NotConfigured,
-        Failed,
-        HeartRate,
     }
 
     #endregion

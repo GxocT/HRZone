@@ -3,7 +3,7 @@
     "id": "HRZone",
     "name": "HR Zone",
     "author": "GxocT",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "icon": "HRZone.Resources.hrzone.png",
     "description": "A custom counter mod that displays your heart rate in game.",
     "gameVersion": "1.40.8",

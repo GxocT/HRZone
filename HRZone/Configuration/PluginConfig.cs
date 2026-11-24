@@ -25,6 +25,10 @@ internal class PluginConfig : INotifyPropertyChanged
 
     public static PluginConfig DefaultValues { get; } = new();
 
+    public const string DEFAULT_CLOCK_FORMAT = "HH:mm";
+
+    internal static readonly string[] CLOCK_FORMATS = ["HH:mm", "HH:mm:ss", "h:mm tt"];
+
     public static PluginConfig Initialize(IPALogger logger, IPAConfig conf)
     {
         if (_instance != null) return _instance;
@@ -55,12 +59,25 @@ internal class PluginConfig : INotifyPropertyChanged
     private bool _noBloom = false;
     private bool _colorize = true;
     private bool _colorizeIcon = true;
+    private bool _autoHideCounter = false;
+    private bool _showMenuClock = true;
+    private bool _showMenuHeartRate = true;
+    private string _menuClockFormat = DEFAULT_CLOCK_FORMAT;
+    private float _menuCounterHeight = 0f;
+    private float _menuCounterDistance = 0f;
+    private float _menuCounterTilt = 0f;
     private int _maxHR = 180;
     private Color _zone1Color = new(0.6117647f, 0.5607843f, 0.5490196f); // default to mauve (#9C8F8C)
     private Color _zone2Color = new(0.4980392f, 0.6509804f, 0.7686275f); // default to blue (#7FA6C4)
     private Color _zone3Color = new(0.5764706f, 0.7529412f, 0.5411765f); // default to green (#93C08A)
     private Color _zone4Color = new(0.9411765f, 0.6392157f, 0.3686275f); // default to orange (#F0A35E)
     private Color _zone5Color = new(0.9058824f, 0.4156863f, 0.3686275f); // default to red (#E76A5E)
+    private string _colorTheme = ColorThemeUtils.SUNSET_KEY;
+    private Color _userThemeZone1Color = new(0.6117647f, 0.5607843f, 0.5490196f); // default to mauve (#9C8F8C)
+    private Color _userThemeZone2Color = new(0.4980392f, 0.6509804f, 0.7686275f); // default to blue (#7FA6C4)
+    private Color _userThemeZone3Color = new(0.5764706f, 0.7529412f, 0.5411765f); // default to green (#93C08A)
+    private Color _userThemeZone4Color = new(0.9411765f, 0.6392157f, 0.3686275f); // default to orange (#F0A35E)
+    private Color _userThemeZone5Color = new(0.9058824f, 0.4156863f, 0.3686275f); // default to red (#E76A5E)
     private Vector3 _staticCounterPosition = new(0f, 1.2f, 7f);
 
     private string _customIcon = "";
@@ -103,6 +120,50 @@ internal class PluginConfig : INotifyPropertyChanged
     {
         get => _colorizeIcon;
         set => _colorizeIcon = value;
+    }
+
+    public virtual bool AutoHideCounter
+    {
+        get => _autoHideCounter;
+        set => _autoHideCounter = value;
+    }
+
+    public virtual bool ShowMenuClock
+    {
+        get => _showMenuClock;
+        set => _showMenuClock = value;
+    }
+
+    public virtual bool ShowMenuHeartRate
+    {
+        get => _showMenuHeartRate;
+        set => _showMenuHeartRate = value;
+    }
+
+    // a stale or hand-edited format string falls back to the default instead of breaking the clock line
+    public virtual string MenuClockFormat
+    {
+        get => Array.IndexOf(CLOCK_FORMATS, _menuClockFormat) >= 0 ? _menuClockFormat : DEFAULT_CLOCK_FORMAT;
+        set => _menuClockFormat = value;
+    }
+
+    public virtual float MenuCounterHeight
+    {
+        get => _menuCounterHeight;
+        set => _menuCounterHeight = value;
+    }
+
+    public virtual float MenuCounterDistance
+    {
+        get => _menuCounterDistance;
+        set => _menuCounterDistance = value;
+    }
+
+    // a rotation offset on top of the block's proven base tilt (design D6)
+    public virtual float MenuCounterTilt
+    {
+        get => _menuCounterTilt;
+        set => _menuCounterTilt = value;
     }
 
     public virtual int MaxHR
@@ -149,6 +210,52 @@ internal class PluginConfig : INotifyPropertyChanged
     {
         get => _zone5Color;
         set => _zone5Color = value;
+    }
+
+    public virtual string ColorTheme
+    {
+        get => _colorTheme;
+        set => _colorTheme = value;
+    }
+
+    [UseConverter(typeof(HexColorConverter))]
+    [JsonConverter(typeof(WrappedTextValueJsonConverter<Color, HexColorConverter>))]
+    public virtual Color UserThemeZone1Color
+    {
+        get => _userThemeZone1Color;
+        set => _userThemeZone1Color = value;
+    }
+
+    [UseConverter(typeof(HexColorConverter))]
+    [JsonConverter(typeof(WrappedTextValueJsonConverter<Color, HexColorConverter>))]
+    public virtual Color UserThemeZone2Color
+    {
+        get => _userThemeZone2Color;
+        set => _userThemeZone2Color = value;
+    }
+
+    [UseConverter(typeof(HexColorConverter))]
+    [JsonConverter(typeof(WrappedTextValueJsonConverter<Color, HexColorConverter>))]
+    public virtual Color UserThemeZone3Color
+    {
+        get => _userThemeZone3Color;
+        set => _userThemeZone3Color = value;
+    }
+
+    [UseConverter(typeof(HexColorConverter))]
+    [JsonConverter(typeof(WrappedTextValueJsonConverter<Color, HexColorConverter>))]
+    public virtual Color UserThemeZone4Color
+    {
+        get => _userThemeZone4Color;
+        set => _userThemeZone4Color = value;
+    }
+
+    [UseConverter(typeof(HexColorConverter))]
+    [JsonConverter(typeof(WrappedTextValueJsonConverter<Color, HexColorConverter>))]
+    public virtual Color UserThemeZone5Color
+    {
+        get => _userThemeZone5Color;
+        set => _userThemeZone5Color = value;
     }
 
     [JsonConverter(typeof(Vector3JsonConverter))]
@@ -220,12 +327,25 @@ internal class PluginConfig : INotifyPropertyChanged
         _noBloom = other._noBloom;
         _colorize = other._colorize;
         _colorizeIcon = other._colorizeIcon;
+        _autoHideCounter = other._autoHideCounter;
+        _showMenuClock = other._showMenuClock;
+        _showMenuHeartRate = other._showMenuHeartRate;
+        _menuClockFormat = other._menuClockFormat;
+        _menuCounterHeight = other._menuCounterHeight;
+        _menuCounterDistance = other._menuCounterDistance;
+        _menuCounterTilt = other._menuCounterTilt;
         _maxHR = other._maxHR;
         _zone1Color = other._zone1Color;
         _zone2Color = other._zone2Color;
         _zone3Color = other._zone3Color;
         _zone4Color = other._zone4Color;
         _zone5Color = other._zone5Color;
+        _colorTheme = other._colorTheme;
+        _userThemeZone1Color = other._userThemeZone1Color;
+        _userThemeZone2Color = other._userThemeZone2Color;
+        _userThemeZone3Color = other._userThemeZone3Color;
+        _userThemeZone4Color = other._userThemeZone4Color;
+        _userThemeZone5Color = other._userThemeZone5Color;
         _staticCounterPosition = other._staticCounterPosition;
         _customIcon = other._customIcon;
 
