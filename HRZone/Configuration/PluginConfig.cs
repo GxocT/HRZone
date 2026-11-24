@@ -61,6 +61,12 @@ internal class PluginConfig : INotifyPropertyChanged
     private Color _zone3Color = new(0.5764706f, 0.7529412f, 0.5411765f); // default to green (#93C08A)
     private Color _zone4Color = new(0.9411765f, 0.6392157f, 0.3686275f); // default to orange (#F0A35E)
     private Color _zone5Color = new(0.9058824f, 0.4156863f, 0.3686275f); // default to red (#E76A5E)
+    private string _colorTheme = ColorThemeUtils.SUNSET_KEY;
+    private Color _userThemeZone1Color = new(0.6117647f, 0.5607843f, 0.5490196f); // default to mauve (#9C8F8C)
+    private Color _userThemeZone2Color = new(0.4980392f, 0.6509804f, 0.7686275f); // default to blue (#7FA6C4)
+    private Color _userThemeZone3Color = new(0.5764706f, 0.7529412f, 0.5411765f); // default to green (#93C08A)
+    private Color _userThemeZone4Color = new(0.9411765f, 0.6392157f, 0.3686275f); // default to orange (#F0A35E)
+    private Color _userThemeZone5Color = new(0.9058824f, 0.4156863f, 0.3686275f); // default to red (#E76A5E)
     private Vector3 _staticCounterPosition = new(0f, 1.2f, 7f);
 
     private string _customIcon = "";
@@ -151,6 +157,52 @@ internal class PluginConfig : INotifyPropertyChanged
         set => _zone5Color = value;
     }
 
+    public virtual string ColorTheme
+    {
+        get => _colorTheme;
+        set => _colorTheme = value;
+    }
+
+    [UseConverter(typeof(HexColorConverter))]
+    [JsonConverter(typeof(WrappedTextValueJsonConverter<Color, HexColorConverter>))]
+    public virtual Color UserThemeZone1Color
+    {
+        get => _userThemeZone1Color;
+        set => _userThemeZone1Color = value;
+    }
+
+    [UseConverter(typeof(HexColorConverter))]
+    [JsonConverter(typeof(WrappedTextValueJsonConverter<Color, HexColorConverter>))]
+    public virtual Color UserThemeZone2Color
+    {
+        get => _userThemeZone2Color;
+        set => _userThemeZone2Color = value;
+    }
+
+    [UseConverter(typeof(HexColorConverter))]
+    [JsonConverter(typeof(WrappedTextValueJsonConverter<Color, HexColorConverter>))]
+    public virtual Color UserThemeZone3Color
+    {
+        get => _userThemeZone3Color;
+        set => _userThemeZone3Color = value;
+    }
+
+    [UseConverter(typeof(HexColorConverter))]
+    [JsonConverter(typeof(WrappedTextValueJsonConverter<Color, HexColorConverter>))]
+    public virtual Color UserThemeZone4Color
+    {
+        get => _userThemeZone4Color;
+        set => _userThemeZone4Color = value;
+    }
+
+    [UseConverter(typeof(HexColorConverter))]
+    [JsonConverter(typeof(WrappedTextValueJsonConverter<Color, HexColorConverter>))]
+    public virtual Color UserThemeZone5Color
+    {
+        get => _userThemeZone5Color;
+        set => _userThemeZone5Color = value;
+    }
+
     [JsonConverter(typeof(Vector3JsonConverter))]
     public virtual Vector3 StaticCounterPosition
     {
@@ -226,6 +278,12 @@ internal class PluginConfig : INotifyPropertyChanged
         _zone3Color = other._zone3Color;
         _zone4Color = other._zone4Color;
         _zone5Color = other._zone5Color;
+        _colorTheme = other._colorTheme;
+        _userThemeZone1Color = other._userThemeZone1Color;
+        _userThemeZone2Color = other._userThemeZone2Color;
+        _userThemeZone3Color = other._userThemeZone3Color;
+        _userThemeZone4Color = other._userThemeZone4Color;
+        _userThemeZone5Color = other._userThemeZone5Color;
         _staticCounterPosition = other._staticCounterPosition;
         _customIcon = other._customIcon;
 
