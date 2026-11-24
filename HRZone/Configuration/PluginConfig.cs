@@ -55,6 +55,7 @@ internal class PluginConfig : INotifyPropertyChanged
     private bool _noBloom = false;
     private bool _colorize = true;
     private bool _colorizeIcon = true;
+    private bool _autoHideCounter = false;
     private int _maxHR = 180;
     private Color _zone1Color = new(0.6117647f, 0.5607843f, 0.5490196f); // default to mauve (#9C8F8C)
     private Color _zone2Color = new(0.4980392f, 0.6509804f, 0.7686275f); // default to blue (#7FA6C4)
@@ -109,6 +110,12 @@ internal class PluginConfig : INotifyPropertyChanged
     {
         get => _colorizeIcon;
         set => _colorizeIcon = value;
+    }
+
+    public virtual bool AutoHideCounter
+    {
+        get => _autoHideCounter;
+        set => _autoHideCounter = value;
     }
 
     public virtual int MaxHR
@@ -272,6 +279,7 @@ internal class PluginConfig : INotifyPropertyChanged
         _noBloom = other._noBloom;
         _colorize = other._colorize;
         _colorizeIcon = other._colorizeIcon;
+        _autoHideCounter = other._autoHideCounter;
         _maxHR = other._maxHR;
         _zone1Color = other._zone1Color;
         _zone2Color = other._zone2Color;

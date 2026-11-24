@@ -114,6 +114,16 @@ internal class MainConfigMenu : BaseConfigViewController
         }
     }
 
+    [UIValue(nameof(Config.AutoHideCounter))]
+    public bool AutoHideCounter
+    {
+        get => Config.AutoHideCounter;
+        set
+        {
+            if (Config.AutoHideCounter != value) Config.AutoHideCounter = value;
+        }
+    }
+
     #endregion
 
     #region Icon Tab

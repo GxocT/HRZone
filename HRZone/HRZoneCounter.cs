@@ -19,7 +19,7 @@ internal abstract class HRZoneCounter
     private readonly AssetBundleManager _assetBundleManager = null!;
 
     [InjectOptional]
-    private readonly IInGameHRProvider? _hrProvider = null;
+    protected readonly IInGameHRProvider? _hrProvider = null;
 
     [InjectOptional]
     private readonly CoreGameHUDController.InitData? _hudInitData = null;
@@ -61,6 +61,11 @@ internal abstract class HRZoneCounter
         }
 
         _view = view;
+        if (ShouldStartHidden() && _hrProvider.CurrentHR == null)
+        {
+            view.Canvas.SetActive(false);
+        }
+
         OnHRUpdate(_hrProvider.CurrentHR); // give it an initial value
 
         _hrProvider.HRChanged += OnHRUpdate;
@@ -71,10 +76,21 @@ internal abstract class HRZoneCounter
 
     protected abstract bool SetupCounter(CounterView view);
 
+    // Auto-hide hook: a subclass that starts its canvas hidden when the feed has no value
+    // yet. The base reveals it on the first real value and never hides it again.
+    protected virtual bool ShouldStartHidden() => false;
+
     private void OnHRUpdate(int? hr)
     {
-        if (hr.HasValue) _view?.ApplyHeartRate(hr.Value);
-        else _view?.ApplyNoValue();
+        if (hr.HasValue)
+        {
+            _view?.Canvas.SetActive(true);
+            _view?.ApplyHeartRate(hr.Value);
+        }
+        else
+        {
+            _view?.ApplyNoValue();
+        }
     }
 
     private void OnSettingChange(object? sender, PropertyChangedEventArgs args)

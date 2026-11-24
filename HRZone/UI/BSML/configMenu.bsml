@@ -8,6 +8,8 @@
             <bool-setting text-key="HRZONE_CONFIG_MENU_MOD_ENABLE_LABEL" value="ModEnable" apply-on-change="true" bind-value="true"/>
             <bool-setting text-key="HRZONE_CONFIG_MENU_NO_BLOOM_LABEL" value="NoBloom" hover-hint-key="HRZONE_CONFIG_MENU_NO_BLOOM_HINT"
                           apply-on-change="true" bind-value="true"/>
+            <bool-setting text-key="HRZONE_CONFIG_MENU_AUTO_HIDE_LABEL" value="AutoHideCounter" hover-hint-key="HRZONE_CONFIG_MENU_AUTO_HIDE_HINT"
+                          apply-on-change="true" bind-value="true"/>
         </vertical>
     </tab>
     <tab tab-name-key="HRZONE_CONFIG_MENU_TAB_ICON" tags="tabs">
