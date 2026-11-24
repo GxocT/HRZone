@@ -8,7 +8,6 @@ using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.Components;
 using BGLib.Polyglot;
 using HMUI;
-using HRZone.Configuration;
 using HRZone.Data;
 using HRZone.Data.DataSources;
 using HRZone.Utils;
@@ -64,6 +63,7 @@ internal class MainConfigMenu : BaseConfigViewController
 
     protected override void RefreshUI()
     {
+        ReconcileThemeSelection();
         UpdateCustomIconSelection();
         NotifyZoneLabels();
         StartFeedPreview();
@@ -78,6 +78,9 @@ internal class MainConfigMenu : BaseConfigViewController
                 break;
             case nameof(Config.MaxHR):
                 NotifyZoneLabels();
+                break;
+            case nameof(Config.ColorTheme):
+                ApplyTheme(Config.ColorTheme);
                 break;
             case nameof(Config.DataSource):
                 NotifyPropertyChanged(nameof(IsWebRequestSource));
@@ -207,7 +210,7 @@ internal class MainConfigMenu : BaseConfigViewController
 
     #endregion
 
-    #region HR Zone & Colorize Tabs
+    #region HR Zone & Theme Tabs
 
     [UIValue(nameof(Config.ColorizeIcon))]
     public bool ColorizeIcon
@@ -229,6 +232,84 @@ internal class MainConfigMenu : BaseConfigViewController
         }
     }
 
+    private bool _applyingTheme;
+
+    [UIValue(nameof(Config.ColorTheme))]
+    public string ColorTheme
+    {
+        get => Config.ColorTheme;
+        set
+        {
+            if (Config.ColorTheme != value) Config.ColorTheme = value;
+        }
+    }
+
+    [UIValue(nameof(ThemeOptions))]
+    [UsedImplicitly]
+    public List<object> ThemeOptions { get; } = [..ColorThemeUtils.DROPDOWN_KEYS];
+
+    [UIAction(nameof(GetThemeDisplayName))]
+    [UsedImplicitly]
+    private string GetThemeDisplayName(string key) => key switch
+    {
+        ColorThemeUtils.SUNSET_KEY => Localization.Get("HRZONE_CONFIG_MENU_THEME_SUNSET"),
+        ColorThemeUtils.PASTEL_KEY => Localization.Get("HRZONE_CONFIG_MENU_THEME_PASTEL"),
+        ColorThemeUtils.BRIGHT_KEY => Localization.Get("HRZONE_CONFIG_MENU_THEME_BRIGHT"),
+        ColorThemeUtils.USER_THEME_KEY => Localization.Get("HRZONE_CONFIG_MENU_THEME_USER"),
+        _ => key,
+    };
+
+    private Color[] CurrentZoneColors() => [Config.Zone1Color, Config.Zone2Color, Config.Zone3Color, Config.Zone4Color, Config.Zone5Color];
+
+    private void ApplyTheme(string key)
+    {
+        if (_applyingTheme) return;
+
+        Color[] colors;
+        if (key == ColorThemeUtils.USER_THEME_KEY)
+            colors = [Config.UserThemeZone1Color, Config.UserThemeZone2Color, Config.UserThemeZone3Color, Config.UserThemeZone4Color, Config.UserThemeZone5Color];
+        else if (!ColorThemeUtils.TryGetPreset(key, out colors))
+            return;
+
+        _applyingTheme = true;
+        try
+        {
+            Config.Zone1Color = colors[0];
+            Config.Zone2Color = colors[1];
+            Config.Zone3Color = colors[2];
+            Config.Zone4Color = colors[3];
+            Config.Zone5Color = colors[4];
+        }
+        finally
+        {
+            _applyingTheme = false;
+        }
+    }
+
+    // A manual zone edit (a color picker change) makes the current screen colors the User Theme slot;
+    // captured at the call sites because PropertyChanged is dispatched asynchronously and a
+    // reactive handler could see stale guard state.
+    private void CaptureUserTheme()
+    {
+        Config.UserThemeZone1Color = Config.Zone1Color;
+        Config.UserThemeZone2Color = Config.Zone2Color;
+        Config.UserThemeZone3Color = Config.Zone3Color;
+        Config.UserThemeZone4Color = Config.Zone4Color;
+        Config.UserThemeZone5Color = Config.Zone5Color;
+
+        if (Config.ColorTheme != ColorThemeUtils.USER_THEME_KEY)
+            Config.ColorTheme = ColorThemeUtils.USER_THEME_KEY;
+    }
+
+    private void ReconcileThemeSelection()
+    {
+        if (!ColorThemeUtils.TryGetPreset(Config.ColorTheme, out var preset)) return;
+        if (ColorThemeUtils.ZoneColorsMatch(CurrentZoneColors(), preset)) return;
+
+        _logger.Debug($"Stored zone colors do not match the '{Config.ColorTheme}' theme; moving them to '{ColorThemeUtils.USER_THEME_KEY}'");
+        CaptureUserTheme();
+    }
+
     [UIValue(nameof(Config.MaxHR))]
     public int MaxHR
     {
@@ -245,7 +326,9 @@ internal class MainConfigMenu : BaseConfigViewController
         get => Config.Zone1Color;
         set
         {
-            if (Config.Zone1Color != value) Config.Zone1Color = value;
+            if (Config.Zone1Color == value) return;
+            Config.Zone1Color = value;
+            CaptureUserTheme();
         }
     }
 
@@ -255,7 +338,9 @@ internal class MainConfigMenu : BaseConfigViewController
         get => Config.Zone2Color;
         set
         {
-            if (Config.Zone2Color != value) Config.Zone2Color = value;
+            if (Config.Zone2Color == value) return;
+            Config.Zone2Color = value;
+            CaptureUserTheme();
         }
     }
 
@@ -265,7 +350,9 @@ internal class MainConfigMenu : BaseConfigViewController
         get => Config.Zone3Color;
         set
         {
-            if (Config.Zone3Color != value) Config.Zone3Color = value;
+            if (Config.Zone3Color == value) return;
+            Config.Zone3Color = value;
+            CaptureUserTheme();
         }
     }
 
@@ -275,7 +362,9 @@ internal class MainConfigMenu : BaseConfigViewController
         get => Config.Zone4Color;
         set
         {
-            if (Config.Zone4Color != value) Config.Zone4Color = value;
+            if (Config.Zone4Color == value) return;
+            Config.Zone4Color = value;
+            CaptureUserTheme();
         }
     }
 
@@ -285,7 +374,9 @@ internal class MainConfigMenu : BaseConfigViewController
         get => Config.Zone5Color;
         set
         {
-            if (Config.Zone5Color != value) Config.Zone5Color = value;
+            if (Config.Zone5Color == value) return;
+            Config.Zone5Color = value;
+            CaptureUserTheme();
         }
     }
 
@@ -322,44 +413,6 @@ internal class MainConfigMenu : BaseConfigViewController
         NotifyPropertyChanged(nameof(Zone5Text));
     }
 
-    [UIValue(nameof(PreviewCounter))]
-    public Transform PreviewCounter { get; private set; } = null!;
-
-    [UIAction(nameof(ResetZone1Color))]
-    [UsedImplicitly]
-    private void ResetZone1Color()
-    {
-        Config.Zone1Color = PluginConfig.DefaultValues.Zone1Color;
-    }
-
-    [UIAction(nameof(ResetZone2Color))]
-    [UsedImplicitly]
-    private void ResetZone2Color()
-    {
-        Config.Zone2Color = PluginConfig.DefaultValues.Zone2Color;
-    }
-
-    [UIAction(nameof(ResetZone3Color))]
-    [UsedImplicitly]
-    private void ResetZone3Color()
-    {
-        Config.Zone3Color = PluginConfig.DefaultValues.Zone3Color;
-    }
-
-    [UIAction(nameof(ResetZone4Color))]
-    [UsedImplicitly]
-    private void ResetZone4Color()
-    {
-        Config.Zone4Color = PluginConfig.DefaultValues.Zone4Color;
-    }
-
-    [UIAction(nameof(ResetZone5Color))]
-    [UsedImplicitly]
-    private void ResetZone5Color()
-    {
-        Config.Zone5Color = PluginConfig.DefaultValues.Zone5Color;
-    }
-
     #endregion
 
     #region Preview Counters
@@ -369,9 +422,6 @@ internal class MainConfigMenu : BaseConfigViewController
     private void SetupPreviewCounters(AssetBundleManager abm, DiContainer di)
     {
         _logger.Debug("Setting up preview counters");
-
-        PreviewCounter = SetupCounterPreview<HRZonePreview>(abm, di, "HRZone Preview Counter")
-                         ?? CreatePreviewFallback("HRZone Preview Fallback");
 
         var serverCounter = SetupCounterPreview<HRZoneFeedPreview>(abm, di, "HRZone Preview Server Counter");
         _feedPreviewComponent = serverCounter?.gameObject.GetComponent<HRZoneFeedPreview>();

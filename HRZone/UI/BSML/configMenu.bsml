@@ -37,35 +37,19 @@
             </horizontal>
         </vertical>
     </tab>
-    <tab tab-name-key="HRZONE_CONFIG_MENU_TAB_COLORIZE" tags="tabs">
+    <tab tab-name-key="HRZONE_CONFIG_MENU_TAB_THEME" tags="tabs">
         <vertical child-control-height='false' spacing="~vertical-spacing" horizontal-fit="PreferredSize" pref-width="~tab-width" child-align="UpperCenter">
             <bool-setting text-key="HRZONE_CONFIG_MENU_COLORIZE_ICON_LABEL" value="ColorizeIcon" hover-hint-key="HRZONE_CONFIG_MENU_COLORIZE_ICON_HINT"
                           apply-on-change="true" bind-value="true"/>
             <bool-setting text-key="HRZONE_CONFIG_MENU_COLORIZE_LABEL" value="Colorize" hover-hint-key="HRZONE_CONFIG_MENU_COLORIZE_HINT"
                           apply-on-change="true" bind-value="true"/>
-            <horizontal horizontal-fit="PreferredSize" pref-width="~tab-width">
-                <color-setting text="~Zone1Text" value="Zone1Color" hover-hint-key="HRZONE_CONFIG_MENU_ZONE1_HINT" apply-on-change="true" bind-value="true"/>
-                <button text-key="HRZONE_COMMON_RESET" on-click="ResetZone1Color" pad-left="2"/>
-            </horizontal>
-            <horizontal horizontal-fit="PreferredSize" pref-width="~tab-width">
-                <color-setting text="~Zone2Text" value="Zone2Color" hover-hint-key="HRZONE_CONFIG_MENU_ZONE2_HINT" apply-on-change="true" bind-value="true"/>
-                <button text-key="HRZONE_COMMON_RESET" on-click="ResetZone2Color" pad-left="2"/>
-            </horizontal>
-            <horizontal horizontal-fit="PreferredSize" pref-width="~tab-width">
-                <color-setting text="~Zone3Text" value="Zone3Color" hover-hint-key="HRZONE_CONFIG_MENU_ZONE3_HINT" apply-on-change="true" bind-value="true"/>
-                <button text-key="HRZONE_COMMON_RESET" on-click="ResetZone3Color" pad-left="2"/>
-            </horizontal>
-            <horizontal horizontal-fit="PreferredSize" pref-width="~tab-width">
-                <color-setting text="~Zone4Text" value="Zone4Color" hover-hint-key="HRZONE_CONFIG_MENU_ZONE4_HINT" apply-on-change="true" bind-value="true"/>
-                <button text-key="HRZONE_COMMON_RESET" on-click="ResetZone4Color" pad-left="2"/>
-            </horizontal>
-            <horizontal horizontal-fit="PreferredSize" pref-width="~tab-width">
-                <color-setting text="~Zone5Text" value="Zone5Color" hover-hint-key="HRZONE_CONFIG_MENU_ZONE5_HINT" apply-on-change="true" bind-value="true"/>
-                <button text-key="HRZONE_COMMON_RESET" on-click="ResetZone5Color" pad-left="2"/>
-            </horizontal>
-            <horizontal horizontal-fit="PreferredSize" vertical-fit="PreferredSize" pref-height="5" child-align="MiddleCenter">
-                <macro.reparent transform="PreviewCounter"/>
-            </horizontal>
+            <dropdown-list-setting text-key="HRZONE_CONFIG_MENU_THEME_LABEL" value="ColorTheme" choices="ThemeOptions" formatter="GetThemeDisplayName"
+                                   apply-on-change="true" bind-value="true"/>
+            <color-setting text="~Zone1Text" value="Zone1Color" hover-hint-key="HRZONE_CONFIG_MENU_ZONE1_HINT" apply-on-change="true" bind-value="true"/>
+            <color-setting text="~Zone2Text" value="Zone2Color" hover-hint-key="HRZONE_CONFIG_MENU_ZONE2_HINT" apply-on-change="true" bind-value="true"/>
+            <color-setting text="~Zone3Text" value="Zone3Color" hover-hint-key="HRZONE_CONFIG_MENU_ZONE3_HINT" apply-on-change="true" bind-value="true"/>
+            <color-setting text="~Zone4Text" value="Zone4Color" hover-hint-key="HRZONE_CONFIG_MENU_ZONE4_HINT" apply-on-change="true" bind-value="true"/>
+            <color-setting text="~Zone5Text" value="Zone5Color" hover-hint-key="HRZONE_CONFIG_MENU_ZONE5_HINT" apply-on-change="true" bind-value="true"/>
         </vertical>
     </tab>
     <tab tab-name-key="HRZONE_CONFIG_MENU_TAB_SERVER" tags="tabs">
