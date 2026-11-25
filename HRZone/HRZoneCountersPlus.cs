@@ -52,7 +52,8 @@ internal sealed class HRZoneCountersPlus : HRZoneCounter, ICounter
             return false;
         }
 
-        var anchoredPosition = _canvasUtility.GetAnchoredPositionFromConfig(_settings) * canvasSettings.PositionScale;
+        var anchoredPosition = (Vector2)(_canvasUtility.GetAnchoredPositionFromConfig(_settings) * canvasSettings.PositionScale)
+                               + Vector2.up * Config.CountersPlusOffsetY * canvasSettings.Size;
 
         var container = view.Container;
         container.gameObject.name = "HRZone Counters+";
