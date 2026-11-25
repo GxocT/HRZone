@@ -85,6 +85,8 @@ internal class MainConfigMenu : BaseConfigViewController
 
     #region General Tab
 
+    private const string COUNTERS_PLUS_MOD_ID = "Counters+";
+
     [UIValue(nameof(Config.ModEnable))]
     public bool ModEnable
     {
@@ -92,6 +94,16 @@ internal class MainConfigMenu : BaseConfigViewController
         set
         {
             if (Config.ModEnable != value) Config.ModEnable = value;
+        }
+    }
+
+    [UIValue(nameof(Config.ShowInGameCounter))]
+    public bool ShowInGameCounter
+    {
+        get => Config.ShowInGameCounter;
+        set
+        {
+            if (Config.ShowInGameCounter != value) Config.ShowInGameCounter = value;
         }
     }
 
@@ -114,6 +126,21 @@ internal class MainConfigMenu : BaseConfigViewController
             if (Config.AutoHideCounter != value) Config.AutoHideCounter = value;
         }
     }
+
+    [UIValue(nameof(Config.CountersPlusIntegration))]
+    public bool CountersPlusIntegration
+    {
+        get => Config.CountersPlusIntegration;
+        set
+        {
+            if (Config.CountersPlusIntegration != value) Config.CountersPlusIntegration = value;
+        }
+    }
+
+    // static per game session: BSIPA loads plugins before this screen can open
+    [UIValue(nameof(IsCountersPlusPresent))]
+    [UsedImplicitly]
+    public bool IsCountersPlusPresent { get; } = Utils.Utils.IsModEnabled(COUNTERS_PLUS_MOD_ID);
 
     #endregion
 
