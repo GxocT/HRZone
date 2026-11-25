@@ -23,7 +23,14 @@ public class GameInstaller : Installer<GameInstaller>
         _logger.Debug("Binding live HR provider");
         Container.BindInterfacesAndSelfTo<LiveHRProvider>().AsSingle();
 
-        _logger.Debug("Binding HR Counter");
-        Container.BindInterfacesTo<HRZoneStandalone>().AsSingle().NonLazy();
+        if (_config.ShowInGameCounter)
+        {
+            _logger.Debug("Binding HR Counter");
+            Container.BindInterfacesTo<HRZoneStandalone>().AsSingle().NonLazy();
+        }
+        else
+        {
+            _logger.Info("Standalone counter is disabled, not binding the gameplay counter");
+        }
     }
 }

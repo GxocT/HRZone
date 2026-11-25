@@ -54,12 +54,14 @@ internal class PluginConfig : INotifyPropertyChanged
     #region private backing fields
 
     private bool _modEnable = true;
+    private bool _showInGameCounter = true;
     private string _dataSource = "WebRequest";
     private string _feedLink = "http://127.0.0.1:62261/bpm";
     private bool _noBloom = false;
     private bool _colorize = true;
     private bool _colorizeIcon = true;
     private bool _autoHideCounter = false;
+    private bool _countersPlusIntegration = false;
     private bool _showMenuClock = true;
     private bool _showMenuHeartRate = true;
     private string _menuClockFormat = DEFAULT_CLOCK_FORMAT;
@@ -90,6 +92,12 @@ internal class PluginConfig : INotifyPropertyChanged
     {
         get => _modEnable;
         set => _modEnable = value;
+    }
+
+    public virtual bool ShowInGameCounter
+    {
+        get => _showInGameCounter;
+        set => _showInGameCounter = value;
     }
 
     public virtual string DataSource
@@ -126,6 +134,12 @@ internal class PluginConfig : INotifyPropertyChanged
     {
         get => _autoHideCounter;
         set => _autoHideCounter = value;
+    }
+
+    public virtual bool CountersPlusIntegration
+    {
+        get => _countersPlusIntegration;
+        set => _countersPlusIntegration = value;
     }
 
     public virtual bool ShowMenuClock
@@ -322,12 +336,14 @@ internal class PluginConfig : INotifyPropertyChanged
     private void CopyFromInternal(PluginConfig other)
     {
         _modEnable = other._modEnable;
+        _showInGameCounter = other._showInGameCounter;
         _dataSource = other._dataSource;
         _feedLink = other._feedLink;
         _noBloom = other._noBloom;
         _colorize = other._colorize;
         _colorizeIcon = other._colorizeIcon;
         _autoHideCounter = other._autoHideCounter;
+        _countersPlusIntegration = other._countersPlusIntegration;
         _showMenuClock = other._showMenuClock;
         _showMenuHeartRate = other._showMenuHeartRate;
         _menuClockFormat = other._menuClockFormat;

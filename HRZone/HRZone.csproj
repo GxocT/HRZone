@@ -34,6 +34,10 @@
             <Private>False</Private>
             <HintPath>$(BeatSaberDir)\Plugins\BSML.dll</HintPath>
         </Reference>
+        <Reference Include="Counters+">
+            <Private>False</Private>
+            <HintPath>$(BeatSaberDir)\Plugins\Counters+.dll</HintPath>
+        </Reference>
         <Reference Include="DataModels">
             <Private>false</Private>
         </Reference>

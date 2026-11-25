@@ -26,6 +26,9 @@ internal abstract class HRZoneCounter
 
     private CounterView? _view;
 
+    // the node the hidden-start and first-value reveal toggle; the standalone counter's prefab canvas by default
+    private GameObject? _visibilityRoot;
+
     protected bool Setup()
     {
         if (_hrProvider == null)
@@ -61,9 +64,10 @@ internal abstract class HRZoneCounter
         }
 
         _view = view;
+        _visibilityRoot = GetVisibilityRoot(view);
         if (ShouldStartHidden() && _hrProvider.CurrentHR == null)
         {
-            view.Canvas.SetActive(false);
+            _visibilityRoot.SetActive(false);
         }
 
         OnHRUpdate(_hrProvider.CurrentHR); // give it an initial value
@@ -76,6 +80,8 @@ internal abstract class HRZoneCounter
 
     protected abstract bool SetupCounter(CounterView view);
 
+    protected virtual GameObject GetVisibilityRoot(CounterView view) => view.Canvas;
+
     // Auto-hide hook: a subclass that starts its canvas hidden when the feed has no value
     // yet. The base reveals it on the first real value and never hides it again.
     protected virtual bool ShouldStartHidden() => false;
@@ -84,7 +90,7 @@ internal abstract class HRZoneCounter
     {
         if (hr.HasValue)
         {
-            _view?.Canvas.SetActive(true);
+            _visibilityRoot?.SetActive(true);
             _view?.ApplyHeartRate(hr.Value);
         }
         else
@@ -121,5 +127,6 @@ internal abstract class HRZoneCounter
 
         _view?.Dispose();
         _view = null;
+        _visibilityRoot = null;
     }
 }
