@@ -1,6 +1,7 @@
-<vertical spacing="1.5" pad-top="2" xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+<vertical spacing="1.5" pad-top="2" pad-left="2" pad-right="2"
+          xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
           xsi:noNamespaceSchemaLocation='https://monkeymanboy.github.io/BSML-Docs/BSMLSchema.xsd'>
-    <text text-key="HRZONE_COUNTERS_PLUS_MENU_NOTICE" overflow-mode="Page"/>
-    <text id="data-source-text" italics="true" align="Center"/>
-    <text id="integration-text" italics="true" align="Center"/>
+    <slider-setting text-key="HRZONE_COUNTERS_PLUS_MENU_OFFSET_LABEL" value="CountersPlusOffsetY"
+                    min="-1.5" max="1.5" increment="0.05" apply-on-change="true"
+                    hover-hint-key="HRZONE_COUNTERS_PLUS_MENU_OFFSET_HINT"/>
 </vertical>

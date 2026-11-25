@@ -62,6 +62,7 @@ internal class PluginConfig : INotifyPropertyChanged
     private bool _colorizeIcon = true;
     private bool _autoHideCounter = false;
     private bool _countersPlusIntegration = false;
+    private float _countersPlusOffsetY = 0f;
     private bool _showMenuClock = true;
     private bool _showMenuHeartRate = true;
     private string _menuClockFormat = DEFAULT_CLOCK_FORMAT;
@@ -140,6 +141,13 @@ internal class PluginConfig : INotifyPropertyChanged
     {
         get => _countersPlusIntegration;
         set => _countersPlusIntegration = value;
+    }
+
+    // vertical fine-tune of the hosted Counters+ widget in meters, on top of the host's placement point
+    public virtual float CountersPlusOffsetY
+    {
+        get => _countersPlusOffsetY;
+        set => _countersPlusOffsetY = value;
     }
 
     public virtual bool ShowMenuClock
@@ -344,6 +352,7 @@ internal class PluginConfig : INotifyPropertyChanged
         _colorizeIcon = other._colorizeIcon;
         _autoHideCounter = other._autoHideCounter;
         _countersPlusIntegration = other._countersPlusIntegration;
+        _countersPlusOffsetY = other._countersPlusOffsetY;
         _showMenuClock = other._showMenuClock;
         _showMenuHeartRate = other._showMenuHeartRate;
         _menuClockFormat = other._menuClockFormat;

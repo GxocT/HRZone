@@ -13,7 +13,7 @@ A Beat Saber custom counter that displays your heart rate in-game, based on [HRC
 - 🕐 Menu display — a clock line and a heart rate counter above the song selection screen; clock and counter toggle independently, the clock format is selectable and the block position adjustable (both on by default)
 - 🌈 Zone color presets — `Sunset`, `Pastel` and `Bright`, or `User Theme` for your own five colors
 - 👻 `Autohide Heart Rate` keeps the in-level counter hidden until the first heart rate arrives
-- 🔌 Optional integration with [Counters+](https://github.com/NuggoDEV/CountersPlus) — HR Zone appears as the `HRZone` counter in the Counters+ list
+- 🔌 Optional integration with [Counters+](https://github.com/NuggoDEV/CountersPlus) — HR Zone appears as the `HRZone` counter in the Counters+ list, with an `Offset` slider on its Counters+ page to shift the widget up or down
 
 ## Requirements
 
@@ -73,7 +73,7 @@ Open an [issue](https://github.com/GxocT/HRZone/issues) if there's a device or s
 
 ## Counters+ Integration
 
-With [Counters+](https://github.com/NuggoDEV/CountersPlus) installed, HR Zone shows up as the `HRZone` counter in the Counters+ list. The integration is **off by default**: turn on `Counters+ Integration` in the General tab of HR Zone settings, and the widget renders on a Counters+ canvas, placed like any other Counters+ counter. Its position comes from the Counters+ settings screen, where the `HRZone` page also tells you which data source is active and whether the integration is on; the look (number color, heart icon, bloom) stays in HR Zone settings.
+With [Counters+](https://github.com/NuggoDEV/CountersPlus) installed, HR Zone shows up as the `HRZone` counter in the Counters+ list. The integration is **off by default**: turn on `Counters+ Integration` in the General tab of HR Zone settings, and the widget renders on a Counters+ canvas, placed like any other Counters+ counter. Its position comes from the Counters+ settings screen, where the `HRZone` page has an `Offset` slider nudging the widget up or down; the look (number color, heart icon, bloom) stays in HR Zone settings.
 
 The two displays are independent: `ShowInGameCounter` toggles HR Zone's own counter and the integration has its own toggle, so they can both be on at once — turn one off if you don't want double counters. Both toggles take effect from the next level start. The hosted widget follows the same rules as the standalone counter: hidden during BeatLeader and ScoreSaber replays and while the mod is disabled.
 
@@ -95,6 +95,7 @@ Most options can be changed in-game but if you want to edit the config directly,
 | `ColorizeIcon`           |   bool    |        `true`        | Tint the heart icon with the current zone color. Turn off to keep the icon image's own colors.    |
 | `AutoHideCounter`        |   bool    |       `false`        | Keep the in-level counter hidden until the first heart rate arrives.                              |
 | `CountersPlusIntegration` |   bool   |       `false`        | Show the heart rate widget on a Counters+ canvas (opt-in, see [Counters+ Integration](#counters-integration)). |
+| `CountersPlusOffsetY`     |  float   |        `0`           | Vertical offset of the hosted Counters+ widget in meters (-1.5..1.5), set by the `Offset` slider on the `HRZone` page in Counters+ settings. |
 | `MaxHR`                  |    int    |        `180`         | Player maximum heart rate (120-220); the five HR zones are derived from it.                       |
 | `Zone1Color`             |  string   |  `"#9C8F8C"` (Mauve) | Color below 60 % of `MaxHR`.                                                                      |
 | `Zone2Color`             |  string   |  `"#7FA6C4"` (Blue)  | Color for 60-70 % of `MaxHR`.                                                                     |
