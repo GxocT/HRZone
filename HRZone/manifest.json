@@ -3,7 +3,7 @@
     "id": "HRZone",
     "name": "HR Zone",
     "author": "GxocT",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "icon": "HRZone.Resources.hrzone.png",
     "description": "A custom counter mod that displays your heart rate in game.",
     "gameVersion": "1.40.8",
@@ -13,10 +13,29 @@
         "SiraUtil": "^3.0.0"
     },
     "loadAfter": [
+        "Counters+",
         "BeatLeader",
         "ScoreSaber"
     ],
     "links": {
         "project-source": "https://github.com/GxocT/HRZone"
+    },
+    "features": {
+        "CountersPlus.CustomCounter": {
+            "Name": "HRZone",
+            "Description": "A counter that displays your heart rate in game.",
+            "MultiplayerReady": true,
+            "CounterLocation": "HRZone.HRZoneCountersPlus",
+            "ConfigDefaults": {
+                "Enabled": true,
+                "Position": "BelowCombo",
+                "Distance": 0
+            },
+            "BSML": {
+                "Resource": "HRZone.UI.BSML.countersPlus.bsml",
+                "Host": "HRZone.UI.CountersPlus.SettingController",
+                "Icon": "HRZone.Resources.hrzone.png"
+            }
+        }
     }
 }

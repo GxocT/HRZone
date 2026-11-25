@@ -1,0 +1,6 @@
+<vertical spacing="1.5" pad-top="2" xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+          xsi:noNamespaceSchemaLocation='https://monkeymanboy.github.io/BSML-Docs/BSMLSchema.xsd'>
+    <text text-key="HRZONE_COUNTERS_PLUS_MENU_NOTICE" overflow-mode="Page"/>
+    <text id="data-source-text" italics="true" align="Center"/>
+    <text id="integration-text" italics="true" align="Center"/>
+</vertical>
